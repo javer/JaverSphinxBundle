@@ -1,0 +1,32 @@
+parameters:
+    sphinx.manager.class: Javer\SphinxBundle\Sphinx\Manager
+    sphinx.event.subscriber.paginate.class: Javer\SphinxBundle\Event\Subscriber\PaginateSphinxQuerySubscriber
+    sphinx.logger.class: Javer\SphinxBundle\Logger\SphinxLogger
+    sphinx.data_collector.class: Javer\SphinxBundle\DataCollector\SphinxDataCollector
+
+services:
+    sphinx:
+        class: "%sphinx.manager.class%"
+        arguments:
+            - "@sphinx.logger"
+            - "%javer_sphinx.host%"
+            - "%javer_sphinx.port%"
+
+    sphinx.event.subscriber.paginate:
+        class: "%sphinx.event.subscriber.paginate.class%"
+        tags:
+            - { name: knp_paginator.subscriber }
+
+    sphinx.logger:
+        class: "%sphinx.logger.class%"
+        arguments:
+            - "@?logger"
+        tags:
+            - { name: monolog.logger, channel: sphinx }
+
+    sphinx.data_collector:
+        class: "%sphinx.data_collector.class%"
+        arguments:
+            - "@sphinx.logger"
+        tags:
+            - { name: data_collector, template: "JaverSphinxBundle:Collector:sphinx.html.twig", id: sphinx }

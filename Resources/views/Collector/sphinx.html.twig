@@ -1,0 +1,131 @@
+{% extends 'WebProfilerBundle:Profiler:layout.html.twig' %}
+
+{% block toolbar %}
+    {% set profiler_markup_version = profiler_markup_version|default(1) %}
+
+    {% if profiler_markup_version == 1 %}
+        {% set icon %}
+            {{ include('JaverSphinxBundle:Collector:icon.html.twig') }}
+
+            <span class="sf-toolbar-status">{{ collector.queriesCount }}</span>
+        {% endset %}
+
+        {% set text %}
+            <div class="sf-toolbar-info-piece">
+                <b>Queries</b>
+                <span class="sf-toolbar-status">{{ collector.queriesCount }}</span>
+            </div>
+
+            <div class="sf-toolbar-info-piece">
+                <b>Query time</b>
+                <span>{{ '%0.2f'|format(collector.queriesTime * 1000) }} ms</span>
+            </div>
+        {% endset %}
+
+        {% include 'WebProfilerBundle:Profiler:toolbar_item.html.twig' with { 'link': profiler_url, status: '' } %}
+    {% elseif collector.queriesCount > 0 %}
+        {% set icon %}
+            {{ include('JaverSphinxBundle:Collector:icon.html.twig') }}
+
+            <span class="sf-toolbar-value">{{ collector.queriesCount }}</span>
+            <span class="sf-toolbar-info-piece-additional-detail">
+                <span class="sf-toolbar-label">in</span>
+                <span class="sf-toolbar-value">{{ '%0.2f'|format(collector.queriesTime * 1000) }}</span>
+                <span class="sf-toolbar-label">ms</span>
+            </span>
+        {% endset %}
+
+        {% set text %}
+            <div class="sf-toolbar-info-piece">
+                <b>Queries</b>
+                <span class="sf-toolbar-status">{{ collector.queriesCount }}</span>
+            </div>
+
+            <div class="sf-toolbar-info-piece">
+                <b>Time</b>
+                <span>{{ '%0.2f'|format(collector.queriesTime * 1000) }} ms</span>
+            </div>
+        {% endset %}
+
+        {% include 'WebProfilerBundle:Profiler:toolbar_item.html.twig' with { 'link': profiler_url, status: '' } %}
+    {% endif %}
+{% endblock %}
+
+{% block menu %}
+    {% set profiler_markup_version = profiler_markup_version|default(1) %}
+
+    {% if profiler_markup_version == 1 %}
+        <span class="label">
+            <span class="icon">{{ include('JaverSphinxBundle:Collector:icon.html.twig') }}</span>
+            <strong>Sphinx</strong>
+            <span class="count">
+                <span>{{ collector.queriesCount }}</span>
+                <span>{{ '%0.0f'|format(collector.queriesTime * 1000) }} ms</span>
+            </span>
+        </span>
+    {% else %}
+        <span class="label {{ collector.queriesCount == 0 ? 'disabled' }}">
+            <span class="icon">{{ include('JaverSphinxBundle:Collector:icon.html.twig') }}</span>
+            <strong>Sphinx</strong>
+            <span class="count">
+                <span>{{ collector.queriesCount }}</span>
+            </span>
+        </span>
+    {% endif %}
+{% endblock %}
+
+{% block panel %}
+    {% set profiler_markup_version = profiler_markup_version|default(1) %}
+
+    {% if profiler_markup_version > 1 %}
+        <h2>Query Metrics</h2>
+
+        <div class="metrics">
+            <div class="metric">
+                <span class="value">{{ collector.queriesCount }}</span>
+                <span class="label">Queries</span>
+            </div>
+
+            <div class="metric">
+                <span class="value">{{ '%0.2f'|format(collector.queriesTime * 1000) }} ms</span>
+                <span class="label">Query time</span>
+            </div>
+
+            <div class="metric">
+                <span class="value">{{ collector.queriesRows }}</span>
+                <span class="label">Rows affected</span>
+            </div>
+        </div>
+    {% endif %}
+
+    <h2>Queries</h2>
+
+    {% if collector.queriesCount == 0 %}
+        <div class="empty">
+            <p{% if profiler_markup_version == 1 %} style="font-style:italic;"{% endif %}>No queries were executed or the logger is disabled.</p>
+        </div>
+    {% else %}
+        <table class="alt">
+            <thead>
+                <tr>
+                    <th class="nowrap">#</th>
+                    <th class="nowrap">Time</th>
+                    <th class="nowrap">Rows</th>
+                    <th style="width: 100%">Query</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for query in collector.queries %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td class="nowrap">{{ '%0.2f'|format(query.time * 1000) }} ms</td>
+                    <td class="nowrap">{{ query.rows }}</td>
+                    <td>
+                        {{ query.sql }}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+{% endblock %}

@@ -403,7 +403,7 @@ class Query
      *
      * @return string
      */
-    protected function quoteValue($value, $type = null)
+    public function quoteValue($value, $type = null)
     {
         if (is_int($value)) {
             return (int) $value;
@@ -616,7 +616,9 @@ class Query
         $stmt = $this->createStatement($this->getQuery());
 
         if ($stmt->execute()) {
-            $this->results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            if ($this->select) {
+                $this->results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            }
             $this->numRows = $stmt->rowCount();
 
             $stmt->closeCursor();

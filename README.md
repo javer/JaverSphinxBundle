@@ -7,12 +7,13 @@ Features:
 - SphinxQL Query Builder
 - Integration with [doctrine/orm](https://packagist.org/packages/doctrine/orm) 
 - Integration with [knplabs/knp-paginator-bundle](https://packagist.org/packages/knplabs/knp-paginator-bundle)
-- Symfony Profiler toolbar section with number of executed queries and profiler page with detailed information about executed queries 
+- Symfony Profiler toolbar section with number of executed queries and profiler page with detailed information about executed queries
+- Ability to test search using [Behat](https://packagist.org/packages/behat/behat) scenarios
 
 Requirements
 ------------
 
-- PHP 7.0+
+- PHP 7.1+
 - pdo_mysql php extension
 
 Installation
@@ -31,6 +32,16 @@ Add to your ```app/config/config.yml``` the following options:
 javer_sphinx:
     host: 127.0.0.1
     port: 9306
+```
+
+Full configuration with default values:
+```yml
+javer_sphinx:
+    host: 127.0.0.1
+    port: 9306
+    config_path: "%kernel.root_dir%/config/sphinx.conf"
+    data_dir: "%kernel.cache_dir%/sphinx"
+    searchd_path: searchd
 ```
 
 Usage
@@ -79,7 +90,7 @@ $query = $this->container->get('sphinx')
     ->from('product')
     ->match(['name', 'description'], $searchQuery)
     ->where('owner_id', $this->getUser()->getId())
-    ->orderBy('created_timestamp', 'desc')
+    ->orderBy('created', 'desc')
     ->useQueryBuilder($queryBuilder, 'p');
 
 $paginator = $this->container->get('knp_paginator')
@@ -96,11 +107,11 @@ source product
         sql_pass                = password
         sql_db                  = database_name
         sql_query               = \
-                SELECT p.id, p.owner_id, p.name, p.description, UNIX_TIMESTAMP(p.created) as created_timestamp, \
+                SELECT p.id, p.owner_id, p.name, p.description, UNIX_TIMESTAMP(p.created) as created, \
                 FROM product p \
                 WHERE p.deletedAt IS NULL
         sql_attr_uint           = owner_id
-        sql_attr_timestamp      = created_timestamp
+        sql_attr_timestamp      = created
 }
                 
 index product
@@ -111,3 +122,46 @@ index product
         min_stemming_len        = 3
 }
 ```
+
+Behat tests
+===========
+
+To be able to test search in Behat scenarios there is built-in behat context SphinxContext.
+ 
+To use it you should add this context in your behat.yml, for example:
+```yml
+selenium:
+    extensions:
+        Behat\Symfony2Extension: ~
+    suites:
+        frontend:
+            contexts:
+                - Javer\SphinxBundle\Behat\Context\SphinxContext
+```
+
+Please note that Symfony2Extension Behat extension is required to be able to use this feature.
+
+Then you should add a new step to your scenario:
+```
+Given I create search index and run sphinx
+```
+
+This step:
+* creates a new configuration for sphinx based on your configuration
+* converts all MySQL indexes to real-time indexes
+* starts daemon
+* loads data from the database to indexes for converted MySQL -> real-time indexes
+* stops daemon at the end of the scenario
+
+Please note that you should explicitly declare all text fields in your indexes in the following form:
+```
+source product
+{
+    #!sql_field_string = name
+}
+```
+It is not necessary when you declare fields for MySQL index in sphinx.conf, but it is needed to be able to convert indexes to real-time.
+
+If you use sqlite as the database engine for running tests you should take into account that not all functions of the MySQL are presented in sqlite, so you should use portable analogs for these functions:
+* `IF(condition, true, false)` -> `CASE WHEN condition THEN true ELSE false END`
+* and so on

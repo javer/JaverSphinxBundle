@@ -27,5 +27,8 @@ class JaverSphinxExtension extends Extension
 
         $container->setParameter('javer_sphinx.host', $config['host']);
         $container->setParameter('javer_sphinx.port', $config['port']);
+        $container->setParameter('javer_sphinx.config_path', $config['config_path']);
+        $container->setParameter('javer_sphinx.data_dir', $config['data_dir']);
+        $container->setParameter('javer_sphinx.searchd_path', $config['searchd_path']);
     }
 }

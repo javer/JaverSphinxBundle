@@ -13,10 +13,16 @@
         }
     ],
     "require": {
-        "php": ">=7.0"
+        "php": ">=7.1"
     },
     "require-dev": {
         "phpunit/phpunit": ">=4.0,<6.0"
+    },
+    "suggest": {
+        "doctrine/orm": "to allow usage with Doctrine ORM",
+        "knplabs/knp-paginator-bundle": "to allow usage with Knp Paginator",
+        "behat/behat": "to be able to test search",
+        "behat/symfony2-extension": "to be able to test search"
     },
     "autoload": {
         "psr-4": {
@@ -25,7 +31,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "1.0.x-dev"
+            "dev-master": "1.1.x-dev"
         }
     }
 }

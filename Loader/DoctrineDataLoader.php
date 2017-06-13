@@ -47,11 +47,11 @@ class DoctrineDataLoader
         foreach ($indexes as $indexName => $indexData) {
             $this->clearIndex($indexName);
 
-            $this->loadDataForSqlQuery($indexName, $indexData['schema'], $indexData['query']);
+            $joinedData = $this->loadDataForJoinedFields($indexName, $indexData['joinedFields']);
+
+            $this->loadDataForSqlQuery($indexName, $indexData['schema'], $indexData['query'], $joinedData);
 
             $this->loadDataForAttrMulti($indexName, $indexData['attrMulti']);
-
-            $this->loadDataForJoinedFields($indexName, $indexData['joinedFields']);
         }
     }
 
@@ -72,10 +72,11 @@ class DoctrineDataLoader
      * @param string $indexName
      * @param array  $schema
      * @param string $sqlQuery
+     * @param array  $joinedData
      *
      * @return integer
      */
-    protected function loadDataForSqlQuery(string $indexName, array $schema, string $sqlQuery)
+    protected function loadDataForSqlQuery(string $indexName, array $schema, string $sqlQuery, array $joinedData = [])
     {
         $stmt = $this->executeDatabaseQuery($sqlQuery);
 
@@ -85,7 +86,7 @@ class DoctrineDataLoader
 
         while (($row = $stmt->fetch(\PDO::FETCH_ASSOC)) !== false) {
             if (empty($columns)) {
-                $columns = array_keys($row);
+                $columns = array_merge(array_keys($row), array_keys($joinedData));
             }
 
             $values = [];
@@ -93,6 +94,14 @@ class DoctrineDataLoader
                 $columnType = $columnName == 'id' ? 'uint' : ($schema[$columnName] ?? 'string');
 
                 $values[] = $sphinxQuery->quoteValue($this->castValue($columnValue, $columnType));
+            }
+
+            if (isset($row['id'])) {
+                $docId = (int) $row['id'];
+
+                foreach ($joinedData as $joinedColumnName => $joinedColumnValues) {
+                    $values[] = $sphinxQuery->quoteValue(implode(' ', $joinedColumnValues[$docId] ?? []));
+                }
             }
 
             $batch .= (strlen($batch) > 0 ? ', ' : '') . '(' . implode(', ', $values) . ')';
@@ -147,38 +156,30 @@ class DoctrineDataLoader
      *
      * @param string $indexName
      * @param array  $joinedFields
+     *
+     * @return array
      */
     protected function loadDataForJoinedFields(string $indexName, array $joinedFields)
     {
+        $data = [];
+
         foreach ($joinedFields as [$queryType, $fieldName, $joinedQuery]) {
             $stmt = $this->executeDatabaseQuery($joinedQuery);
-            $multiValues = [];
+            $data[$fieldName] = [];
 
             while (($row = $stmt->fetch(\PDO::FETCH_NUM)) !== false) {
                 $docId = (int) $row[0];
                 $value = (string) $row[1];
 
-                if (!isset($multiValues[$docId])) {
-                    $multiValues[$docId] = [];
+                if (!isset($data[$fieldName][$docId])) {
+                    $data[$fieldName][$docId] = [];
                 }
 
-                $multiValues[$docId][] = $value;
-            }
-
-            foreach ($multiValues as $docId => $values) {
-                $sphinxQuery = $this->createSphinxQuery();
-
-                $sql = sprintf(
-                    'UPDATE %s SET %s = %s WHERE id = %d',
-                    $indexName,
-                    $fieldName,
-                    $sphinxQuery->quoteValue(implode(' ', $values)),
-                    $docId
-                );
-
-                $sphinxQuery->setQuery($sql)->execute();
+                $data[$fieldName][$docId][] = $value;
             }
         }
+
+        return $data;
     }
 
     /**

@@ -71,4 +71,12 @@ class Manager
     {
         return new Query($this->getConnection(), $this->logger);
     }
+
+    /**
+     * Closes the current connection.
+     */
+    public function closeConnection()
+    {
+        $this->connection = null;
+    }
 }

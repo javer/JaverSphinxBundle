@@ -14,7 +14,7 @@ use PDOStatement;
  */
 class Query
 {
-    const CONDITION_OPERATORS = ['=', '!=', '<', '>', '<=', '>=', 'IN', 'NOT IN', 'BETWEEN'];
+    protected const CONDITION_OPERATORS = ['=', '!=', '<', '>', '<=', '>=', 'IN', 'NOT IN', 'BETWEEN'];
 
     /**
      * @var PDO
@@ -27,22 +27,22 @@ class Query
     protected $logger;
 
     /**
-     * @var string
+     * @var string|null
      */
     protected $query;
 
     /**
-     * @var QueryBuilder
+     * @var QueryBuilder|null
      */
     protected $queryBuilder;
 
     /**
-     * @var string
+     * @var string|null
      */
     protected $queryBuilderAlias;
 
     /**
-     * @var string
+     * @var string|null
      */
     protected $queryBuilderColumn;
 
@@ -214,7 +214,7 @@ class Query
 
         $operator = strtoupper($operator);
 
-        if (!in_array($operator, self::CONDITION_OPERATORS)) {
+        if (!in_array($operator, static::CONDITION_OPERATORS)) {
             throw new \InvalidArgumentException(sprintf('Invalid operator %s', $operator));
         }
 
@@ -250,12 +250,13 @@ class Query
      *
      * @param string|string[] $column
      * @param string          $value
+     * @param boolean         $safe
      *
      * @return Query
      */
-    public function match($column, $value)
+    public function match($column, $value, bool $safe = false)
     {
-        $this->match[] = [$column, $value];
+        $this->match[] = [$column, $value, $safe];
 
         return $this;
     }
@@ -401,7 +402,7 @@ class Query
      * @param mixed  $value
      * @param string $type
      *
-     * @return string
+     * @return string|integer|boolean
      */
     public function quoteValue($value, $type = null)
     {
@@ -422,7 +423,7 @@ class Query
      *
      * @return string
      */
-    protected function quoteMatch(string $value, $isText = false)
+    public function quoteMatch(string $value, $isText = false): string
     {
         return addcslashes($value, $isText ? '\()!@~&/^$=<>' : '\()|-!@~"&/^$=<>');
     }
@@ -504,7 +505,7 @@ class Query
      *
      * @return string
      */
-    protected function buildCondition(array $conditions)
+    protected function buildCondition(array $conditions): string
     {
         $pieces = [];
 
@@ -530,18 +531,22 @@ class Query
      *
      * @return string
      */
-    protected function buildMatch(array $matches)
+    protected function buildMatch(array $matches): string
     {
         $pieces = [];
 
-        foreach ($matches as [$column, $value]) {
+        foreach ($matches as [$column, $value, $safe]) {
             if (is_array($column)) {
                 $column = '(' . implode(',', array_map([$this, 'quoteMatch'], $column)) . ')';
             } else {
                 $column = $this->quoteMatch($column);
             }
 
-            $pieces[] = sprintf('@%s %s', $column, $this->quoteMatch($value, true));
+            if (!$safe) {
+                $value = $this->quoteMatch($value);
+            }
+
+            $pieces[] = sprintf('@%s %s', $column, $value);
         }
 
         return sprintf('MATCH(%s)', $this->quoteValue(implode(' ', $pieces)));
@@ -554,7 +559,7 @@ class Query
      *
      * @return string
      */
-    protected function buildOrder(array $orders)
+    protected function buildOrder(array $orders): string
     {
         $pieces = [];
 
@@ -572,7 +577,7 @@ class Query
      *
      * @return string
      */
-    protected function buildOption(array $options)
+    protected function buildOption(array $options): string
     {
         $pieces = [];
 
@@ -656,7 +661,7 @@ class Query
      */
     protected function createStatement(string $query): PDOStatement
     {
-        return $this->connection->query($query);
+        return $this->connection->prepare($query);
     }
 
     /**

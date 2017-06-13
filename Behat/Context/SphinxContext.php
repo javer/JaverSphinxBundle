@@ -24,6 +24,8 @@ class SphinxContext implements Context, KernelAwareContext
     {
         $container = $this->getContainer();
 
+        $container->get('sphinx')->closeConnection();
+
         $dataDir = $container->getParameter('javer_sphinx.data_dir');
         if (!is_dir($dataDir)) {
             mkdir($dataDir, 0755, true);
@@ -49,6 +51,8 @@ class SphinxContext implements Context, KernelAwareContext
      */
     public function afterScenario()
     {
+        $this->getContainer()->get('sphinx')->closeConnection();
+
         $this->getContainer()->get('sphinx.daemon')->stop();
     }
 }

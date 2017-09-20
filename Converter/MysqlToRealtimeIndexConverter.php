@@ -128,7 +128,7 @@ class MysqlToRealtimeIndexConverter
                         ];
                     }
                 }
-            } elseif ($index->getOptionByName('type') == 'rt') {
+            } elseif ($index->getOptionByName('type', 'plain') != 'plain') {
                 $rtConfig->addIndex(clone $index);
             }
         }

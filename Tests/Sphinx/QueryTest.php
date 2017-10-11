@@ -2,6 +2,7 @@
 
 namespace Javer\SphinxBundle\Tests\Sphinx;
 
+use Javer\SphinxBundle\Logger\SphinxLogger;
 use Javer\SphinxBundle\Sphinx\Query;
 
 /**
@@ -18,17 +19,24 @@ class QueryTest extends \PHPUnit_Framework_TestCase
      */
     private function createQuery(): Query
     {
-        /** @var Query|\PHPUnit_Framework_MockObject_MockObject $query */
-        $query = $this->getMockBuilder(Query::class)
+        $pdo = $this->getMockBuilder(\PDO::class)
             ->disableOriginalConstructor()
-            ->setMethods(['quoteValue'])
+            ->setMethods(['quote'])
             ->getMock();
 
-        $query
-            ->method('quoteValue')
+        $pdo
+            ->method('quote')
             ->willReturnCallback(function ($value) {
                 return is_string($value) ? '"' . str_replace('"', '\"', $value) . '"' : $value;
             });
+
+        $logger = $this->createMock(SphinxLogger::class);
+
+        /** @var Query|\PHPUnit_Framework_MockObject_MockObject $query */
+        $query = $this->getMockBuilder(Query::class)
+            ->setConstructorArgs([$pdo, $logger])
+            ->setMethods()
+            ->getMock();
 
         return $query;
     }
@@ -92,5 +100,19 @@ class QueryTest extends \PHPUnit_Framework_TestCase
         $expectedSql = 'DESCRIBE index1';
 
         $this->assertEquals($expectedSql, $actualSql);
+    }
+
+    /**
+     * Test quote value.
+     */
+    public function testQuoteValue()
+    {
+        $query = $this->createQuery();
+
+        $this->assertSame(0, $query->quoteValue(false));
+        $this->assertSame(1, $query->quoteValue(true));
+        $this->assertSame(2, $query->quoteValue(2));
+        $this->assertSame(3, $query->quoteValue('3'));
+        $this->assertSame('"4a"', $query->quoteValue('4a'));
     }
 }

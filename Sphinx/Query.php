@@ -406,10 +406,10 @@ class Query
      */
     public function quoteValue($value, $type = null)
     {
-        if (is_int($value)) {
+        if (is_int($value) || (is_string($value) && strval(intval($value)) === $value)) {
             return (int) $value;
         } elseif (is_bool($value)) {
-            return (bool) $value;
+            return (int) $value;
         } else {
             return $this->connection->quote($value, $type);
         }
@@ -513,7 +513,7 @@ class Query
             if ($operator === 'BETWEEN') {
                 $value = $this->quoteValue($value[0]) . ' AND ' . $this->quoteValue($value[1]);
             } elseif (is_array($value)) {
-                $value = '(' . implode(', ', array_map('intval', $value)) . ')';
+                $value = '(' . implode(', ', array_map([$this, 'quoteValue'], $value)) . ')';
             } else {
                 $value = $this->quoteValue($value);
             }

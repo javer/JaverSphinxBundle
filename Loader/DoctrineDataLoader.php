@@ -107,6 +107,10 @@ class DoctrineDataLoader
             $batch .= (strlen($batch) > 0 ? ', ' : '') . '(' . implode(', ', $values) . ')';
         }
 
+        if (count($columns) == 0 || strlen($batch) == 0) {
+            return 0;
+        }
+
         $sql = 'REPLACE INTO ' . $indexName . ' (' . implode(', ', $columns) . ') VALUES ' . $batch;
 
         return $sphinxQuery->setQuery($sql)->execute();

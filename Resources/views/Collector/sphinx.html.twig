@@ -1,11 +1,11 @@
-{% extends 'WebProfilerBundle:Profiler:layout.html.twig' %}
+{% extends '@WebProfiler/Profiler/layout.html.twig' %}
 
 {% block toolbar %}
     {% set profiler_markup_version = profiler_markup_version|default(1) %}
 
     {% if profiler_markup_version == 1 %}
         {% set icon %}
-            {{ include('JaverSphinxBundle:Collector:icon.html.twig') }}
+            {{ include('@JaverSphinx/Collector/icon.html.twig') }}
 
             <span class="sf-toolbar-status">{{ collector.queriesCount }}</span>
         {% endset %}
@@ -22,10 +22,10 @@
             </div>
         {% endset %}
 
-        {% include 'WebProfilerBundle:Profiler:toolbar_item.html.twig' with { 'link': profiler_url, status: '' } %}
+        {% include '@WebProfiler/Profiler/toolbar_item.html.twig' with { 'link': profiler_url, status: '' } %}
     {% elseif collector.queriesCount > 0 %}
         {% set icon %}
-            {{ include('JaverSphinxBundle:Collector:icon.html.twig') }}
+            {{ include('@JaverSphinx/Collector/icon.html.twig') }}
 
             <span class="sf-toolbar-value">{{ collector.queriesCount }}</span>
             <span class="sf-toolbar-info-piece-additional-detail">
@@ -47,7 +47,7 @@
             </div>
         {% endset %}
 
-        {% include 'WebProfilerBundle:Profiler:toolbar_item.html.twig' with { 'link': profiler_url, status: '' } %}
+        {% include '@WebProfiler/Profiler/toolbar_item.html.twig' with { 'link': profiler_url, status: '' } %}
     {% endif %}
 {% endblock %}
 
@@ -56,7 +56,7 @@
 
     {% if profiler_markup_version == 1 %}
         <span class="label">
-            <span class="icon">{{ include('JaverSphinxBundle:Collector:icon.html.twig') }}</span>
+            <span class="icon">{{ include('@JaverSphinx/Collector/icon.html.twig') }}</span>
             <strong>Sphinx</strong>
             <span class="count">
                 <span>{{ collector.queriesCount }}</span>
@@ -65,7 +65,7 @@
         </span>
     {% else %}
         <span class="label {{ collector.queriesCount == 0 ? 'disabled' }}">
-            <span class="icon">{{ include('JaverSphinxBundle:Collector:icon.html.twig') }}</span>
+            <span class="icon">{{ include('@JaverSphinx/Collector/icon.html.twig') }}</span>
             <strong>Sphinx</strong>
             <span class="count">
                 <span>{{ collector.queriesCount }}</span>

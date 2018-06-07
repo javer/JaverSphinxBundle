@@ -16,6 +16,7 @@ parameters:
 services:
     sphinx:
         class: "%sphinx.manager.class%"
+        public: true
         arguments:
             - "@sphinx.logger"
             - "%javer_sphinx.host%"
@@ -38,7 +39,7 @@ services:
         arguments:
             - "@sphinx.logger"
         tags:
-            - { name: data_collector, template: "JaverSphinxBundle:Collector:sphinx.html.twig", id: sphinx }
+            - { name: data_collector, template: "@JaverSphinx/Collector/sphinx.html.twig", id: sphinx }
 
     sphinx.daemon:
         class: "%sphinx.daemon.class%"

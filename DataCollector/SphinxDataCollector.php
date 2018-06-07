@@ -87,7 +87,9 @@ class SphinxDataCollector extends DataCollector
      */
     public function reset()
     {
-        $this->data = array();
+        $this->data = [];
+
+        $this->logger->reset();
     }
 
     /**

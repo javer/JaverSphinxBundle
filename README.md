@@ -97,7 +97,7 @@ $paginator = $this->container->get('knp_paginator')
     ->paginate($query, $request->query->get('page', 1), 20);
 ```
 
-To run the above examples by injecting the service instead of passing the container (the preferred way in Symfony 4), add the following to the constructor, and replace the $this->container calls with $this->sphinx, $this->em, etc.
+To run the above examples by injecting the service instead of passing the container (the preferred way in Symfony 4), add the following to the constructor, and replace the `$this->container` calls with `$this->sphinx`, `$this->em`, etc.
 
 ```php
 use Javer\SphinxBundle\Sphinx\Manager;

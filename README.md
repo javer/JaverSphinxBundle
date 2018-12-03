@@ -104,13 +104,14 @@ use Javer\SphinxBundle\Sphinx\Manager;
 use Knp\Component\Pager\Pagination\PaginationInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
-    public function __construct(EntityManagerInterface $em, 
+private $sphinx;
+private $em;
+private $paginator;
+                                
+
+public function __construct(EntityManagerInterface $em, 
                                 PaginatorInterface $paginator,
                                 Manager $sphinx)
-                                
-    private $sphinx;
-    private $em;
-    private $paginator;
                                 
     {
         $this->sphinx = $sphinx;

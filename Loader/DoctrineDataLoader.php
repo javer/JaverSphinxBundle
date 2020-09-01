@@ -7,6 +7,7 @@ use Doctrine\DBAL\Driver\PDOSqlite\Driver as SqliteDriver;
 use Doctrine\DBAL\Driver\Statement;
 use Javer\SphinxBundle\Sphinx\Manager;
 use Javer\SphinxBundle\Sphinx\Query;
+use PDO;
 
 /**
  * Class DoctrineDataLoader
@@ -28,8 +29,8 @@ class DoctrineDataLoader
     /**
      * DoctrineDataLoader constructor.
      *
-     * @param Manager    $sphinx
-     * @param Connection $database
+     * @param Manager         $sphinx
+     * @param Connection|null $database
      */
     public function __construct(Manager $sphinx, Connection $database = null)
     {
@@ -42,7 +43,7 @@ class DoctrineDataLoader
      *
      * @param array $indexes
      */
-    public function loadDataIntoIndexes($indexes)
+    public function loadDataIntoIndexes(array $indexes): void
     {
         foreach ($indexes as $indexName => $indexData) {
             $this->clearIndex($indexName);
@@ -60,7 +61,7 @@ class DoctrineDataLoader
      *
      * @param string $indexName
      */
-    protected function clearIndex(string $indexName)
+    protected function clearIndex(string $indexName): void
     {
         $this->createSphinxQuery('DELETE FROM ' . $indexName . ' WHERE id >= 1')
             ->execute();
@@ -76,7 +77,12 @@ class DoctrineDataLoader
      *
      * @return integer
      */
-    protected function loadDataForSqlQuery(string $indexName, array $schema, string $sqlQuery, array $joinedData = [])
+    protected function loadDataForSqlQuery(
+        string $indexName,
+        array $schema,
+        string $sqlQuery,
+        array $joinedData = []
+    ): int
     {
         $stmt = $this->executeDatabaseQuery($sqlQuery);
 
@@ -84,14 +90,14 @@ class DoctrineDataLoader
         $batch = '';
         $columns = [];
 
-        while (($row = $stmt->fetch(\PDO::FETCH_ASSOC)) !== false) {
+        while (($row = $stmt->fetch(PDO::FETCH_ASSOC)) !== false) {
             if (empty($columns)) {
                 $columns = array_merge(array_keys($row), array_keys($joinedData));
             }
 
             $values = [];
             foreach ($row as $columnName => $columnValue) {
-                $columnType = $columnName == 'id' ? 'uint' : ($schema[$columnName] ?? 'string');
+                $columnType = $columnName === 'id' ? 'uint' : ($schema[$columnName] ?? 'string');
 
                 $values[] = $sphinxQuery->quoteValue($this->castValue($columnValue, $columnType));
             }
@@ -104,10 +110,10 @@ class DoctrineDataLoader
                 }
             }
 
-            $batch .= (strlen($batch) > 0 ? ', ' : '') . '(' . implode(', ', $values) . ')';
+            $batch .= ($batch !== '' ? ', ' : '') . '(' . implode(', ', $values) . ')';
         }
 
-        if (count($columns) == 0 || strlen($batch) == 0) {
+        if ($batch === '' || count($columns) === 0) {
             return 0;
         }
 
@@ -122,7 +128,7 @@ class DoctrineDataLoader
      * @param string $indexName
      * @param array  $attrMulti
      */
-    protected function loadDataForAttrMulti(string $indexName, array $attrMulti)
+    protected function loadDataForAttrMulti(string $indexName, array $attrMulti): void
     {
         foreach ($attrMulti as [$attrType, $attrName, $attrQuery]) {
             $stmt = $this->executeDatabaseQuery($attrQuery);
@@ -130,7 +136,7 @@ class DoctrineDataLoader
             $multiValues = [];
             $sphinxQuery = $this->createSphinxQuery();
 
-            while (($row = $stmt->fetch(\PDO::FETCH_NUM)) !== false) {
+            while (($row = $stmt->fetch(PDO::FETCH_NUM)) !== false) {
                 $docId = (int) $row[0];
                 $value = $row[1];
 
@@ -163,7 +169,7 @@ class DoctrineDataLoader
      *
      * @return array
      */
-    protected function loadDataForJoinedFields(string $indexName, array $joinedFields)
+    protected function loadDataForJoinedFields(string $indexName, array $joinedFields): array
     {
         $data = [];
 
@@ -171,7 +177,7 @@ class DoctrineDataLoader
             $stmt = $this->executeDatabaseQuery($joinedQuery);
             $data[$fieldName] = [];
 
-            while (($row = $stmt->fetch(\PDO::FETCH_NUM)) !== false) {
+            while (($row = $stmt->fetch(PDO::FETCH_NUM)) !== false) {
                 $docId = (int) $row[0];
                 $value = (string) $row[1];
 
@@ -193,7 +199,7 @@ class DoctrineDataLoader
      *
      * @return Statement
      */
-    protected function executeDatabaseQuery(string $query)
+    protected function executeDatabaseQuery(string $query): Statement
     {
         return $this->database->executeQuery($this->adaptQuery($query));
     }
@@ -205,7 +211,7 @@ class DoctrineDataLoader
      *
      * @return string
      */
-    protected function adaptQuery(string $query)
+    protected function adaptQuery(string $query): string
     {
         if ($this->database->getDriver() instanceof SqliteDriver) {
             $query = preg_replace("/UNIX_TIMESTAMP\(/i", "strftime('%s', ", $query);
@@ -217,15 +223,15 @@ class DoctrineDataLoader
     /**
      * Create a new Sphinx Query.
      *
-     * @param string $query
+     * @param string|null $query
      *
      * @return Query
      */
-    protected function createSphinxQuery(string $query = null)
+    protected function createSphinxQuery(string $query = null): Query
     {
         $sphinxQuery = $this->sphinx->createQuery();
 
-        if (!is_null($query)) {
+        if ($query !== null) {
             $sphinxQuery->setQuery($query);
         }
 

@@ -6,6 +6,7 @@ use Javer\SphinxBundle\Logger\SphinxLogger;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\DataCollector\DataCollector;
+use Throwable;
 
 /**
  * Class SphinxDataCollector
@@ -30,9 +31,9 @@ class SphinxDataCollector extends DataCollector
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public function collect(Request $request, Response $response, \Exception $exception = null)
+    public function collect(Request $request, Response $response, Throwable $exception = null): void
     {
         $this->data = [
             'queries' => $this->logger->getQueries(),
@@ -83,9 +84,9 @@ class SphinxDataCollector extends DataCollector
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public function reset()
+    public function reset(): void
     {
         $this->data = [];
 
@@ -93,9 +94,9 @@ class SphinxDataCollector extends DataCollector
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public function getName()
+    public function getName(): string
     {
         return 'sphinx';
     }

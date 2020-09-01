@@ -53,7 +53,7 @@ class Manager
      */
     protected function getConnection(): PDO
     {
-        if (is_null($this->connection)) {
+        if ($this->connection === null) {
             $this->connection = new PDO(sprintf('mysql:host=%s;port=%d', $this->host, $this->port));
 
             $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -75,7 +75,7 @@ class Manager
     /**
      * Closes the current connection.
      */
-    public function closeConnection()
+    public function closeConnection(): void
     {
         $this->connection = null;
     }

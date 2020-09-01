@@ -5,6 +5,8 @@ namespace Javer\SphinxBundle\Behat\Context;
 use Behat\Behat\Context\Context;
 use Behat\Symfony2Extension\Context\KernelAwareContext;
 use Behat\Symfony2Extension\Context\KernelDictionary;
+use Javer\SphinxBundle\Sphinx\Daemon;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Class SphinxContext
@@ -20,9 +22,9 @@ class SphinxContext implements Context, KernelAwareContext
      *
      * @Given I create search index and run sphinx
      */
-    public function createSearchIndexAndRunSphinx()
+    public function createSearchIndexAndRunSphinx(): void
     {
-        $container = $this->getContainer();
+        $container = $this->getTestContainer();
 
         $container->get('sphinx')->closeConnection();
 
@@ -33,6 +35,7 @@ class SphinxContext implements Context, KernelAwareContext
 
         $configPath = $dataDir . '/sphinx.conf';
 
+        /** @var Daemon $daemon */
         $daemon = $container->get('sphinx.daemon')->setConfigPath($configPath);
         $daemon->stop();
 
@@ -49,10 +52,22 @@ class SphinxContext implements Context, KernelAwareContext
      *
      * @AfterScenario
      */
-    public function afterScenario()
+    public function afterScenario(): void
     {
-        $this->getContainer()->get('sphinx')->closeConnection();
+        $this->getTestContainer()->get('sphinx')->closeConnection();
 
-        $this->getContainer()->get('sphinx.daemon')->stop();
+        $this->getTestContainer()->get('sphinx.daemon')->stop();
+    }
+
+    /**
+     * Returns test container.
+     *
+     * @return ContainerInterface
+     */
+    protected function getTestContainer(): ContainerInterface
+    {
+        $container = $this->getContainer();
+
+        return $container->has('test.container') ? $container->get('test.container') : $container;
     }
 }

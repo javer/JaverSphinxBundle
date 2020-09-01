@@ -45,7 +45,7 @@ class Config
      *
      * @return Config
      */
-    public static function fromString(string $config): Config
+    public static function fromString(string $config): self
     {
         return static::parse($config);
     }
@@ -57,7 +57,7 @@ class Config
      *
      * @return Config
      */
-    public static function fromFile(string $filename): Config
+    public static function fromFile(string $filename): self
     {
         return static::parse(file_get_contents($filename));
     }
@@ -69,9 +69,9 @@ class Config
      *
      * @return Config
      */
-    protected static function parse(string $configText): Config
+    protected static function parse(string $configText): self
     {
-        $configText = str_replace(["\r", "\n\n", "\\\n"], ["\n", "\n", ""], $configText);
+        $configText = str_replace(["\r", "\n\n", "\\\n"], ["\n", "\n", ''], $configText);
         $configText = preg_replace('/#[^!].*?$/', '', $configText);
 
         $config = new static();
@@ -130,7 +130,7 @@ class Config
      *
      * @return Config
      */
-    public function addSource(Source $source)
+    public function addSource(Source $source): self
     {
         $this->sources[] = $source->setConfig($this);
 
@@ -172,7 +172,7 @@ class Config
      *
      * @return Config
      */
-    public function addIndex(Index $index)
+    public function addIndex(Index $index): self
     {
         $this->indexes[] = $index->setConfig($this);
 
@@ -214,7 +214,7 @@ class Config
      *
      * @return Config
      */
-    public function setIndexer(Indexer $indexer = null)
+    public function setIndexer(Indexer $indexer = null): self
     {
         $this->indexer = $indexer ? $indexer->setConfig($this) : null;
 
@@ -234,11 +234,11 @@ class Config
     /**
      * Set daemon.
      *
-     * @param Daemon $daemon
+     * @param Daemon|null $daemon
      *
      * @return Config
      */
-    public function setDaemon(Daemon $daemon = null)
+    public function setDaemon(Daemon $daemon = null): self
     {
         $this->daemon = $daemon ? $daemon->setConfig($this) : null;
 
@@ -260,7 +260,7 @@ class Config
      *
      * @return string
      */
-    public function toString()
+    public function toString(): string
     {
         $config = '';
 
@@ -290,7 +290,7 @@ class Config
      *
      * @return Config
      */
-    public function saveToFile(string $filename)
+    public function saveToFile(string $filename): self
     {
         file_put_contents($filename, $this->toString());
 
@@ -302,7 +302,7 @@ class Config
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->toString();
     }
@@ -320,11 +320,11 @@ class Config
             $this->indexes[$k] = (clone $index)->setConfig($this);
         }
 
-        if (!is_null($this->indexer)) {
+        if ($this->indexer !== null) {
             $this->indexer = (clone $this->indexer)->setConfig($this);
         }
 
-        if (!is_null($this->daemon)) {
+        if ($this->daemon !== null) {
             $this->daemon = (clone $this->daemon)->setConfig($this);
         }
     }

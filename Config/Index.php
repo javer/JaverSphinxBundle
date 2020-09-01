@@ -12,9 +12,9 @@ class Index extends Block
     /**
      * Index constructor.
      *
-     * @param string $blockName
-     * @param string $blockParent
-     * @param array  $options
+     * @param string      $blockName
+     * @param string|null $blockParent
+     * @param array       $options
      */
     public function __construct(string $blockName, string $blockParent = null, array $options = [])
     {
@@ -34,7 +34,7 @@ class Index extends Block
     {
         $options = $this->getOptions();
 
-        if (!is_null($this->blockParent) && !is_null($this->config)) {
+        if ($this->blockParent !== null && $this->config !== null) {
             if ($parent = $this->config->getIndexByName($this->blockParent)) {
                 return array_merge($parent->getMergedOptions(), $options);
             }

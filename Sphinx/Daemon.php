@@ -2,6 +2,8 @@
 
 namespace Javer\SphinxBundle\Sphinx;
 
+use RuntimeException;
+
 /**
  * Class Daemon
  *
@@ -63,9 +65,9 @@ class Daemon
      *
      * @return Daemon
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
-    public function start()
+    public function start(): self
     {
         $command = sprintf(
             '%s -c %s',
@@ -76,7 +78,7 @@ class Daemon
         exec($command, $output, $returnStatus);
 
         if ($returnStatus !== 0) {
-            throw new \RuntimeException(sprintf('Cannot start sphinx daemon, return code: %d', $returnStatus));
+            throw new RuntimeException(sprintf('Cannot start sphinx daemon, return code: %d', $returnStatus));
         }
 
         sleep($this->getStartTimeout());
@@ -89,18 +91,20 @@ class Daemon
      *
      * @return Daemon
      */
-    public function stop()
+    public function stop(): self
     {
         $pidPath = $this->getPidPath();
 
-        if (!is_null($pidPath) && file_exists($pidPath)) {
-            $pid = (int) file_get_contents($pidPath);
+        if ($pidPath === null || !file_exists($pidPath) || ($pid = (int) file_get_contents($pidPath)) === 0) {
+            return $this;
+        }
 
-            if ($pid > 0) {
-                posix_kill($pid, SIGTERM);
+        posix_kill($pid, SIGTERM);
 
-                sleep($this->getStopTimeout());
-            }
+        $endTime = microtime(true) + $this->getStopTimeout();
+
+        while ($endTime > microtime(true) && posix_getpgid($pid)) {
+            usleep(100000);
         }
 
         return $this;
@@ -123,7 +127,7 @@ class Daemon
      *
      * @return Daemon
      */
-    public function setSearchdPath(string $searchdPath)
+    public function setSearchdPath(string $searchdPath): self
     {
         $this->searchdPath = $searchdPath;
 
@@ -147,7 +151,7 @@ class Daemon
      *
      * @return Daemon
      */
-    public function setConfigPath(string $configPath)
+    public function setConfigPath(string $configPath): self
     {
         $this->configPath = $configPath;
 
@@ -171,7 +175,7 @@ class Daemon
      *
      * @return Daemon
      */
-    public function setPidPath(string $pidPath)
+    public function setPidPath(string $pidPath): self
     {
         $this->pidPath = $pidPath;
 
@@ -195,7 +199,7 @@ class Daemon
      *
      * @return Daemon
      */
-    public function setStartTimeout(int $startTimeout)
+    public function setStartTimeout(int $startTimeout): self
     {
         $this->startTimeout = $startTimeout;
 
@@ -219,7 +223,7 @@ class Daemon
      *
      * @return Daemon
      */
-    public function setStopTimeout(int $stopTimeout)
+    public function setStopTimeout(int $stopTimeout): self
     {
         $this->stopTimeout = $stopTimeout;
 

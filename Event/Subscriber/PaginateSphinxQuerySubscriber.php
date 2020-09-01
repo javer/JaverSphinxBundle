@@ -18,7 +18,7 @@ class PaginateSphinxQuerySubscriber implements EventSubscriberInterface
      *
      * @return array The event names to listen to
      */
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             'knp_pager.items' => ['items', 0],
@@ -30,7 +30,7 @@ class PaginateSphinxQuerySubscriber implements EventSubscriberInterface
      *
      * @param ItemsEvent $event
      */
-    public function items(ItemsEvent $event)
+    public function items(ItemsEvent $event): void
     {
         if ($event->target instanceof Query) {
             $query = $event->target;

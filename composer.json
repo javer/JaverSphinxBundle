@@ -3,7 +3,7 @@
     "type": "symfony-bundle",
     "description": "Provides integration of Sphinx search engine with Symfony using SphinxQL",
     "keywords": ["sphinx", "sphinxql", "search", "symfony", "symfony2", "doctrine2"],
-    "homepage": "https://github.com/javer",
+    "homepage": "https://github.com/javer/JaverSphinxBundle",
     "license": "MIT",
     "authors": [
         {
@@ -13,10 +13,24 @@
         }
     ],
     "require": {
-        "php": ">=7.1"
+        "php": ">=7.1",
+        "ext-pdo": "*"
     },
     "require-dev": {
-        "phpunit/phpunit": ">=4.0,<6.0"
+        "behat/behat": "^3.7",
+        "behat/symfony2-extension": "2.1.*",
+        "doctrine/dbal": "^2.10",
+        "doctrine/orm": "^2.7",
+        "knplabs/knp-components": "^1.3 || ^2.0",
+        "phpunit/phpunit": "^9.3",
+        "psr/log": "^1.0",
+        "squizlabs/php_codesniffer": "3.5.*",
+        "swivl/php-coding-standard": "^1.0",
+        "symfony/config": "^2.8 || ^3.0 || ^4.0 || ^5.0",
+        "symfony/dependency-injection": "^2.8 || ^3.0 || ^4.0 || ^5.0",
+        "symfony/event-dispatcher": "^2.8 || ^3.0 || ^4.0 || ^5.0",
+        "symfony/http-foundation": "^2.8 || ^3.0 || ^4.0 || ^5.0",
+        "symfony/http-kernel": "^2.8 || ^3.0 || ^4.0 || ^5.0"
     },
     "suggest": {
         "doctrine/orm": "to allow usage with Doctrine ORM",
@@ -31,7 +45,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "1.1.x-dev"
+            "dev-master": "1.2.x-dev"
         }
     }
 }

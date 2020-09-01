@@ -95,7 +95,7 @@ abstract class Block
     /**
      * Set block name.
      *
-     * @param string $blockName
+     * @param string|null $blockName
      *
      * @return Block
      */
@@ -119,7 +119,7 @@ abstract class Block
     /**
      * Set block parent name.
      *
-     * @param string $blockParent
+     * @param string|null $blockParent
      *
      * @return Block
      */
@@ -154,7 +154,7 @@ abstract class Block
 
         foreach ($this->options as [$optionName, $optionValue]) {
             if ($optionName === $name) {
-                if (is_null($value)) {
+                if ($value === null) {
                     $value = $optionValue;
                 } elseif (is_array($value)) {
                     $value[] = $optionValue;
@@ -164,7 +164,7 @@ abstract class Block
             }
         }
 
-        return !is_null($value) ? $value : $defaultValue;
+        return $value ?? $defaultValue;
     }
 
     /**
@@ -201,15 +201,15 @@ abstract class Block
      *
      * @return string
      */
-    public function toString()
+    public function toString(): string
     {
         $block = $this->blockType;
 
-        if (!is_null($this->blockName)) {
+        if ($this->blockName !== null) {
             $block .= ' ' . $this->blockName;
         }
 
-        if (!is_null($this->blockParent)) {
+        if ($this->blockParent !== null) {
             $block .= ' : ' . $this->blockParent;
         }
 
@@ -229,7 +229,7 @@ abstract class Block
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->toString();
     }
@@ -247,7 +247,7 @@ abstract class Block
      *
      * @return array
      */
-    public function __sleep()
+    public function __sleep(): array
     {
         return array_diff(array_keys(get_object_vars($this)), ['config']);
     }

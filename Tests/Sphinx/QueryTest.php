@@ -4,13 +4,16 @@ namespace Javer\SphinxBundle\Tests\Sphinx;
 
 use Javer\SphinxBundle\Logger\SphinxLogger;
 use Javer\SphinxBundle\Sphinx\Query;
+use PDO;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Class QueryTest
  *
  * @package Javer\SphinxBundle\Tests\Sphinx
  */
-class QueryTest extends \PHPUnit_Framework_TestCase
+class QueryTest extends TestCase
 {
     /**
      * Creates a new Query.
@@ -19,23 +22,20 @@ class QueryTest extends \PHPUnit_Framework_TestCase
      */
     private function createQuery(): Query
     {
-        $pdo = $this->getMockBuilder(\PDO::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['quote'])
-            ->getMock();
+        $pdo = $this->createPartialMock(PDO::class, ['quote']);
 
         $pdo
             ->method('quote')
-            ->willReturnCallback(function ($value) {
+            ->willReturnCallback(static function ($value) {
                 return is_string($value) ? '"' . str_replace('"', '\"', $value) . '"' : $value;
             });
 
         $logger = $this->createMock(SphinxLogger::class);
 
-        /** @var Query|\PHPUnit_Framework_MockObject_MockObject $query */
+        /** @var Query|MockObject $query */
         $query = $this->getMockBuilder(Query::class)
             ->setConstructorArgs([$pdo, $logger])
-            ->setMethods()
+            ->onlyMethods([])
             ->getMock();
 
         return $query;
@@ -44,7 +44,7 @@ class QueryTest extends \PHPUnit_Framework_TestCase
     /**
      * Tests select query.
      */
-    public function testSelectQuery()
+    public function testSelectQuery(): void
     {
         $actualSql = $this->createQuery()
             ->select('id', 'column1', 'column2', 'WEIGHT() as weight')
@@ -74,8 +74,8 @@ class QueryTest extends \PHPUnit_Framework_TestCase
             . ' FROM index1, index2'
             . ' WHERE column3 = "value1"'
             . ' AND column4 > 4'
-            . ' AND column5 IN (5, 6)'
-            . ' AND column6 NOT IN (7, 8)'
+            . ' AND column5 IN (5, "6")'
+            . ' AND column6 NOT IN (7, "8")'
             . ' AND column7 BETWEEN 9 AND 10'
             . ' AND MATCH("@column8 value2 @(column9,column10) value3")'
             . ' GROUP BY column11, column12'
@@ -85,13 +85,13 @@ class QueryTest extends \PHPUnit_Framework_TestCase
             . ' LIMIT 5, 10'
             . ' OPTION agent_query_timeout = 10000, max_matches = 1000, field_weights = (column9=10, column10=3)';
 
-        $this->assertEquals($expectedSql, $actualSql);
+        self::assertEquals($expectedSql, $actualSql);
     }
 
     /**
      * Test raw query.
      */
-    public function testRawQuery()
+    public function testRawQuery(): void
     {
         $actualSql = $this->createQuery()
             ->setQuery('DESCRIBE index1')
@@ -99,20 +99,20 @@ class QueryTest extends \PHPUnit_Framework_TestCase
 
         $expectedSql = 'DESCRIBE index1';
 
-        $this->assertEquals($expectedSql, $actualSql);
+        self::assertEquals($expectedSql, $actualSql);
     }
 
     /**
      * Test quote value.
      */
-    public function testQuoteValue()
+    public function testQuoteValue(): void
     {
         $query = $this->createQuery();
 
-        $this->assertSame(0, $query->quoteValue(false));
-        $this->assertSame(1, $query->quoteValue(true));
-        $this->assertSame(2, $query->quoteValue(2));
-        $this->assertSame(3, $query->quoteValue('3'));
-        $this->assertSame('"4a"', $query->quoteValue('4a'));
+        self::assertSame(0, $query->quoteValue(false));
+        self::assertSame(1, $query->quoteValue(true));
+        self::assertSame(2, $query->quoteValue(2));
+        self::assertSame('"3"', $query->quoteValue('3'));
+        self::assertSame('"4a"', $query->quoteValue('4a'));
     }
 }

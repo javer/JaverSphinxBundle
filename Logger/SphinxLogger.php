@@ -39,7 +39,7 @@ class SphinxLogger
     /**
      * SphinxLogger constructor.
      *
-     * @param LoggerInterface $logger
+     * @param LoggerInterface|null $logger
      */
     public function __construct(LoggerInterface $logger = null)
     {
@@ -53,7 +53,7 @@ class SphinxLogger
      * @param integer $numRows
      * @param float   $time
      */
-    public function logQuery(string $query, int $numRows, float $time)
+    public function logQuery(string $query, int $numRows, float $time): void
     {
         $this->queries[] = [
             'sql' => $query,
@@ -75,7 +75,7 @@ class SphinxLogger
      *
      * @return array
      */
-    public function getQueries()
+    public function getQueries(): array
     {
         return $this->queries;
     }
@@ -113,7 +113,7 @@ class SphinxLogger
     /**
      * Resets internal state.
      */
-    public function reset()
+    public function reset(): void
     {
         $this->queries = [];
         $this->queriesCount = 0;

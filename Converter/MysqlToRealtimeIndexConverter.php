@@ -52,8 +52,8 @@ class MysqlToRealtimeIndexConverter
     /**
      * Convert config with mysql indexes to realtime indexes.
      *
-     * @param string  $sourceConfigPath
-     * @param string  $targetConfigPath
+     * @param string $sourceConfigPath
+     * @param string $targetConfigPath
      *
      * @return array
      */
@@ -78,22 +78,22 @@ class MysqlToRealtimeIndexConverter
 
                     foreach ($sourceOptions as [$optionName, $optionValue]) {
                         if (preg_match($sqlAttrRegexp, $optionName, $match)) {
-                            $schema[$optionValue] = $match[1] == 'field' ? $match[1] : $match[2];
-                        } elseif ($optionName == 'sql_query') {
+                            $schema[$optionValue] = $match[1] === 'field' ? $match[1] : $match[2];
+                        } elseif ($optionName === 'sql_query') {
                             $sqlQuery = $optionValue;
-                        } elseif ($optionName == 'sql_joined_field') {
+                        } elseif ($optionName === 'sql_joined_field') {
                             // FIELD-NAME 'from' ( 'query' | 'payload-query' | 'ranged-query' ); QUERY [ ; RANGE-QUERY ]
                             $pieces = array_map('trim', explode(';', $optionValue));
                             if (preg_match('/^(\S+) from (\S+)$/', $pieces[0], $joinedMatch)) {
-                                // [$queryType, $fieldName, $joinedQuery]
+                                // queryType, fieldName, joinedQuery
                                 $sqlJoinedFields[] = [strtolower($joinedMatch[2]), $joinedMatch[1], $pieces[1]];
                                 $schema[$joinedMatch[1]] = 'field';
                             }
-                        } elseif ($optionName == 'sql_attr_multi') {
+                        } elseif ($optionName === 'sql_attr_multi') {
                             // sql_attr_multi = ATTR-TYPE ATTR-NAME 'from' SOURCE-TYPE [;QUERY] [;RANGE-QUERY]
                             $pieces = array_map('trim', explode(';', $optionValue));
                             if (preg_match('/^(\S+) (\S+) from (\S+)$/', $pieces[0], $multiMatch)) {
-                                // [$attrType, $attrName, $attrQuery]
+                                // attrType, attrName, attrQuery
                                 $sqlAttrMulti[] = [$multiMatch[1], $multiMatch[2], $pieces[1]];
                                 $schema[$multiMatch[2]] = 'multi';
                             }
@@ -107,13 +107,13 @@ class MysqlToRealtimeIndexConverter
                         $newIndex->addOption('path', $this->getDataDir() . '/' . $index->getBlockName());
 
                         foreach ($index->getMergedOptions() as [$optionName, $optionValue]) {
-                            if (!in_array($optionName, $this->getIndexOptionsBlacklist())) {
+                            if (!in_array($optionName, $this->getIndexOptionsBlacklist(), true)) {
                                 $newIndex->addOption($optionName, $optionValue);
                             }
                         }
 
                         foreach ($schema as $fieldName => $fieldType) {
-                            if ($fieldType == 'field') {
+                            if ($fieldType === 'field') {
                                 $newIndex->addOption('rt_field', $fieldName);
                             } else {
                                 $newIndex->addOption('rt_attr_' . $fieldType, $fieldName);
@@ -128,7 +128,7 @@ class MysqlToRealtimeIndexConverter
                         ];
                     }
                 }
-            } elseif ($index->getOptionByName('type', 'plain') != 'plain') {
+            } elseif ($index->getOptionByName('type', 'plain') !== 'plain') {
                 $rtConfig->addIndex(clone $index);
             }
         }
@@ -164,7 +164,7 @@ class MysqlToRealtimeIndexConverter
      *
      * @return MysqlToRealtimeIndexConverter
      */
-    public function setPort(int $port)
+    public function setPort(int $port): self
     {
         $this->port = $port;
 
@@ -188,7 +188,7 @@ class MysqlToRealtimeIndexConverter
      *
      * @return MysqlToRealtimeIndexConverter
      */
-    public function setDataDir(string $dataDir)
+    public function setDataDir(string $dataDir): self
     {
         $this->dataDir = $dataDir;
 
@@ -212,7 +212,7 @@ class MysqlToRealtimeIndexConverter
      *
      * @return MysqlToRealtimeIndexConverter
      */
-    public function setPidPath(string $pidPath)
+    public function setPidPath(string $pidPath): self
     {
         $this->pidPath = $pidPath;
 
@@ -236,7 +236,7 @@ class MysqlToRealtimeIndexConverter
      *
      * @return MysqlToRealtimeIndexConverter
      */
-    public function setIndexOptionsBlacklist(array $indexOptionsBlacklist)
+    public function setIndexOptionsBlacklist(array $indexOptionsBlacklist): self
     {
         $this->indexOptionsBlacklist = $indexOptionsBlacklist;
 

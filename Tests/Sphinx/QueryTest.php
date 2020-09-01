@@ -35,7 +35,7 @@ class QueryTest extends TestCase
         /** @var Query|MockObject $query */
         $query = $this->getMockBuilder(Query::class)
             ->setConstructorArgs([$pdo, $logger])
-            ->onlyMethods([])
+            ->setMethods()
             ->getMock();
 
         return $query;

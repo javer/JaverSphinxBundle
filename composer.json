@@ -36,7 +36,8 @@
         "doctrine/orm": "to allow usage with Doctrine ORM",
         "knplabs/knp-paginator-bundle": "to allow usage with Knp Paginator",
         "behat/behat": "to be able to test search",
-        "behat/symfony2-extension": "to be able to test search"
+        "behat/symfony2-extension": "to be able to test search",
+        "friends-of-behat/symfony-extension": "to be able to test search"
     },
     "autoload": {
         "psr-4": {

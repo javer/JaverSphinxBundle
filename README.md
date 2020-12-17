@@ -127,7 +127,10 @@ Behat tests
 ===========
 
 To be able to test search in Behat scenarios there is built-in behat context SphinxContext.
- 
+
+Installation with behat/symfony2-extension
+------------------------------------------
+
 To use it you should add this context in your behat.yml, for example:
 ```yml
 selenium:
@@ -140,6 +143,29 @@ selenium:
 ```
 
 Please note that Symfony2Extension Behat extension is required to be able to use this feature.
+
+Installation with friends-of-behat/symfony-extension
+----------------------------------------------------
+
+Register SphinxDIContext in the container:
+```yaml
+#config/services_test.yaml
+services:
+    Javer\SphinxBundle\Behat\Context\SphinxDIContext:
+        arguments:
+            $container: '@test.service_container'
+```
+and then use it in your behat.yml:
+```yml
+default:
+    suites:
+        default:
+            contexts:
+                - Javer\SphinxBundle\Behat\Context\SphinxDIContext
+```
+
+Usage
+-----
 
 Then you should add a new step to your scenario:
 ```

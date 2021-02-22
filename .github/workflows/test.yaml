@@ -1,0 +1,57 @@
+name: Test
+
+on:
+    push:
+    pull_request:
+        types: [opened, synchronize, edited, reopened]
+
+jobs:
+    test:
+        name: PHP ${{ matrix.php-version }}
+
+        runs-on: ubuntu-18.04
+
+        continue-on-error: ${{ matrix.allowed-to-fail }}
+
+        strategy:
+            matrix:
+                php-version:
+                    - '7.1'
+                    - '7.2'
+                    - '7.3'
+                    - '7.4'
+                    - '8.0'
+                allowed-to-fail: [false]
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  coverage: xdebug
+                  ini-values: "memory_limit=-1"
+                  php-version: ${{ matrix.php-version }}
+                  tools: composer:v2, cs2pr
+
+            - name: Validate composer.json
+              run: composer validate --no-check-lock
+
+            - name: Install dependencies
+              run: composer install --prefer-dist --no-progress --ansi
+
+            - name: Lint PHP files
+              run: find Behat Config Converter DataCollector DependencyInjection Event Loader Logger Sphinx Tests -name "*.php" -print0 | xargs -0 -n1 -P8 php -l
+
+            - name: Setup problem matchers for PHP
+              run: echo "::add-matcher::${{ runner.tool_cache }}/php.json"
+
+            - name: Setup problem matchers for PHPUnit
+              run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+
+            - name: Validate code style
+              run: vendor/bin/phpcs -q --report=checkstyle | cs2pr
+
+            - name: Run PHPUnit tests
+              run: vendor/bin/phpunit --coverage-text

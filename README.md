@@ -39,7 +39,7 @@ Full configuration with default values:
 javer_sphinx:
     host: 127.0.0.1
     port: 9306
-    config_path: "%kernel.root_dir%/config/sphinx.conf"
+    config_path: "%kernel.project_dir%/config/sphinx.conf"
     data_dir: "%kernel.cache_dir%/sphinx"
     searchd_path: searchd
 ```

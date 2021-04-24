@@ -5,16 +5,8 @@ namespace Javer\SphinxBundle\DependencyInjection;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
-/**
- * Class Configuration
- *
- * @package Javer\SphinxBundle\DependencyInjection
- */
 class Configuration implements ConfigurationInterface
 {
-    /**
-     * {@inheritDoc}
-     */
     public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('javer_sphinx');

@@ -2,21 +2,16 @@
 
 namespace Javer\SphinxBundle\Config;
 
-/**
- * Class Source
- *
- * @package Javer\SphinxBundle\Config
- */
 class Source extends Block
 {
     /**
      * Source constructor.
      *
-     * @param string      $blockName
-     * @param string|null $blockParent
-     * @param array       $options
+     * @param string                       $blockName
+     * @param string|null                  $blockParent
+     * @param array<array{string, string}> $options
      */
-    public function __construct(string $blockName, string $blockParent = null, array $options = [])
+    public function __construct(string $blockName, ?string $blockParent = null, array $options = [])
     {
         $this
             ->setBlockType('source')
@@ -28,7 +23,7 @@ class Source extends Block
     /**
      * Returns merged options.
      *
-     * @return array
+     * @return array<array{string, string}>
      */
     public function getMergedOptions(): array
     {

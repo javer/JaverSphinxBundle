@@ -7,15 +7,13 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
-/**
- * Class JaverSphinxExtension
- *
- * @package Javer\SphinxBundle\DependencyInjection
- */
 class JaverSphinxExtension extends Extension
 {
     /**
-     * {@inheritDoc}
+     * Loads a specific configuration.
+     *
+     * @param mixed[]          $configs
+     * @param ContainerBuilder $container
      */
     public function load(array $configs, ContainerBuilder $container): void
     {

@@ -2,17 +2,12 @@
 
 namespace Javer\SphinxBundle\Config;
 
-/**
- * Class Indexer
- *
- * @package Javer\SphinxBundle\Config
- */
 class Indexer extends Block
 {
     /**
      * Indexer constructor.
      *
-     * @param array $options
+     * @param array<array{string, string}> $options
      */
     public function __construct(array $options = [])
     {

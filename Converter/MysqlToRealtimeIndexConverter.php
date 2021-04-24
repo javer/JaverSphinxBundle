@@ -6,47 +6,23 @@ use Javer\SphinxBundle\Config\Config;
 use Javer\SphinxBundle\Config\Daemon;
 use Javer\SphinxBundle\Config\Index;
 
-/**
- * Class MysqlToRealtimeIndexConverter
- *
- * @package Javer\SphinxBundle\Converter
- */
 class MysqlToRealtimeIndexConverter
 {
     /**
-     * @var integer
-     */
-    protected $port;
-
-    /**
-     * @var string
-     */
-    protected $dataDir;
-
-    /**
-     * @var string
-     */
-    protected $pidPath;
-
-    /**
-     * @var array
-     */
-    protected $indexOptionsBlacklist;
-
-    /**
      * MysqlToRealtimeIndexConverter constructor.
      *
-     * @param integer $port
-     * @param string  $dataDir
-     * @param string  $pidPath
-     * @param array   $indexOptionsBlacklist
+     * @param integer  $port
+     * @param string   $dataDir
+     * @param string   $pidPath
+     * @param string[] $indexOptionsBlacklist
      */
-    public function __construct(int $port, string $dataDir, string $pidPath, array $indexOptionsBlacklist)
+    public function __construct(
+        protected int $port,
+        protected string $dataDir,
+        protected string $pidPath,
+        protected array $indexOptionsBlacklist,
+    )
     {
-        $this->port = $port;
-        $this->dataDir = $dataDir;
-        $this->pidPath = $pidPath;
-        $this->indexOptionsBlacklist = $indexOptionsBlacklist;
     }
 
     /**
@@ -56,6 +32,13 @@ class MysqlToRealtimeIndexConverter
      * @param string $targetConfigPath
      *
      * @return array
+     *
+     * @phpstan-return array<string, array{
+     *     schema: array<string, string>,
+     *     query: string,
+     *     joinedFields: array<array{string, string, string}>,
+     *     attrMulti: array<array{string, string, string}>
+     * }>
      */
     public function convertConfig(string $sourceConfigPath, string $targetConfigPath): array
     {
@@ -147,23 +130,11 @@ class MysqlToRealtimeIndexConverter
         return $indexes;
     }
 
-    /**
-     * Returns port.
-     *
-     * @return integer
-     */
     public function getPort(): int
     {
         return $this->port;
     }
 
-    /**
-     * Set port.
-     *
-     * @param integer $port
-     *
-     * @return MysqlToRealtimeIndexConverter
-     */
     public function setPort(int $port): self
     {
         $this->port = $port;
@@ -171,23 +142,11 @@ class MysqlToRealtimeIndexConverter
         return $this;
     }
 
-    /**
-     * Returns data dir.
-     *
-     * @return string
-     */
     public function getDataDir(): string
     {
         return $this->dataDir;
     }
 
-    /**
-     * Set data dir.
-     *
-     * @param string $dataDir
-     *
-     * @return MysqlToRealtimeIndexConverter
-     */
     public function setDataDir(string $dataDir): self
     {
         $this->dataDir = $dataDir;
@@ -195,23 +154,11 @@ class MysqlToRealtimeIndexConverter
         return $this;
     }
 
-    /**
-     * Returns pid path.
-     *
-     * @return string
-     */
     public function getPidPath(): string
     {
         return $this->pidPath;
     }
 
-    /**
-     * Set pid path.
-     *
-     * @param string $pidPath
-     *
-     * @return MysqlToRealtimeIndexConverter
-     */
     public function setPidPath(string $pidPath): self
     {
         $this->pidPath = $pidPath;
@@ -222,7 +169,7 @@ class MysqlToRealtimeIndexConverter
     /**
      * Returns indexOptionsBlacklist.
      *
-     * @return array
+     * @return string[]
      */
     public function getIndexOptionsBlacklist(): array
     {
@@ -232,9 +179,9 @@ class MysqlToRealtimeIndexConverter
     /**
      * Set indexOptionsBlacklist.
      *
-     * @param array $indexOptionsBlacklist
+     * @param string[] $indexOptionsBlacklist
      *
-     * @return MysqlToRealtimeIndexConverter
+     * @return self
      */
     public function setIndexOptionsBlacklist(array $indexOptionsBlacklist): self
     {

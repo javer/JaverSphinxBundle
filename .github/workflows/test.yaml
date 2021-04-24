@@ -9,17 +9,13 @@ jobs:
     test:
         name: PHP ${{ matrix.php-version }}
 
-        runs-on: ubuntu-18.04
+        runs-on: ubuntu-20.04
 
         continue-on-error: ${{ matrix.allowed-to-fail }}
 
         strategy:
             matrix:
                 php-version:
-                    - '7.1'
-                    - '7.2'
-                    - '7.3'
-                    - '7.4'
                     - '8.0'
                 allowed-to-fail: [false]
 
@@ -52,6 +48,9 @@ jobs:
 
             - name: Validate code style
               run: vendor/bin/phpcs -q --report=checkstyle | cs2pr
+
+            - name: PHPStan
+              run: vendor/bin/phpstan analyse
 
             - name: Run PHPUnit tests
               run: vendor/bin/phpunit --coverage-text

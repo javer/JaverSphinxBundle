@@ -6,17 +6,12 @@ use Javer\SphinxBundle\Sphinx\Query;
 use Knp\Component\Pager\Event\ItemsEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
-/**
- * Class PaginateSphinxQuerySubscriber
- *
- * @package Javer\SphinxBundle\Event\Subscriber
- */
 class PaginateSphinxQuerySubscriber implements EventSubscriberInterface
 {
     /**
      * Returns an array of event names this subscriber wants to listen to.
      *
-     * @return array The event names to listen to
+     * @return array<string, array{string, int}>
      */
     public static function getSubscribedEvents(): array
     {
@@ -25,11 +20,6 @@ class PaginateSphinxQuerySubscriber implements EventSubscriberInterface
         ];
     }
 
-    /**
-     * Process pagination for Query.
-     *
-     * @param ItemsEvent $event
-     */
     public function items(ItemsEvent $event): void
     {
         if ($event->target instanceof Query) {

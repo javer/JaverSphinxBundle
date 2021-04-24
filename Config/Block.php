@@ -2,128 +2,63 @@
 
 namespace Javer\SphinxBundle\Config;
 
-/**
- * Class Block
- *
- * @package Javer\SphinxBundle\Config
- */
 abstract class Block
 {
-    /**
-     * @var Config
-     */
-    protected $config;
+    protected ?Config $config = null;
+
+    protected string $blockType;
+
+    protected ?string $blockName = null;
+
+    protected ?string $blockParent = null;
 
     /**
-     * @var string
+     * @var array<array{string, string}>
      */
-    protected $blockType;
+    protected array $options = [];
 
-    /**
-     * @var string|null
-     */
-    protected $blockName;
-
-    /**
-     * @var string|null
-     */
-    protected $blockParent;
-
-    /**
-     * @var array
-     */
-    protected $options = [];
-
-    /**
-     * Return config instance.
-     *
-     * @return Config|null
-     */
     public function getConfig(): ?Config
     {
         return $this->config;
     }
 
-    /**
-     * Set config instance.
-     *
-     * @param Config $config
-     *
-     * @return Block
-     */
-    public function setConfig(Config $config)
+    public function setConfig(Config $config): static
     {
         $this->config = $config;
 
         return $this;
     }
 
-    /**
-     * Returns block type.
-     *
-     * @return string
-     */
     public function getBlockType(): string
     {
         return $this->blockType;
     }
 
-    /**
-     * Set block type.
-     *
-     * @param string $blockType
-     *
-     * @return Block
-     */
-    public function setBlockType(string $blockType)
+    public function setBlockType(string $blockType): static
     {
         $this->blockType = $blockType;
 
         return $this;
     }
 
-    /**
-     * Returns block name.
-     *
-     * @return string
-     */
     public function getBlockName(): ?string
     {
         return $this->blockName;
     }
 
-    /**
-     * Set block name.
-     *
-     * @param string|null $blockName
-     *
-     * @return Block
-     */
-    public function setBlockName(string $blockName = null)
+    public function setBlockName(?string $blockName): static
     {
         $this->blockName = $blockName;
 
         return $this;
     }
 
-    /**
-     * Returns block parent name.
-     *
-     * @return string|null
-     */
     public function getBlockParent(): ?string
     {
         return $this->blockParent;
     }
 
-    /**
-     * Set block parent name.
-     *
-     * @param string|null $blockParent
-     *
-     * @return Block
-     */
-    public function setBlockParent(string $blockParent = null)
+    public function setBlockParent(?string $blockParent): static
     {
         $this->blockParent = $blockParent;
 
@@ -133,7 +68,7 @@ abstract class Block
     /**
      * Returns options.
      *
-     * @return array
+     * @return array<array{string, string}>
      */
     public function getOptions(): array
     {
@@ -146,9 +81,9 @@ abstract class Block
      * @param string $name
      * @param mixed  $defaultValue
      *
-     * @return array|string|null
+     * @return string[]|string|null
      */
-    public function getOptionByName(string $name, $defaultValue = null)
+    public function getOptionByName(string $name, mixed $defaultValue = null)
     {
         $value = null;
 
@@ -170,37 +105,24 @@ abstract class Block
     /**
      * Set options.
      *
-     * @param array $options
+     * @param array<array{string, string}> $options
      *
-     * @return Block
+     * @return static
      */
-    public function setOptions(array $options)
+    public function setOptions(array $options): static
     {
         $this->options = $options;
 
         return $this;
     }
 
-    /**
-     * Add option.
-     *
-     * @param string $name
-     * @param string $value
-     *
-     * @return Block
-     */
-    public function addOption(string $name, string $value)
+    public function addOption(string $name, string $value): static
     {
         $this->options[] = [$name, $value];
 
         return $this;
     }
 
-    /**
-     * Renders block to string.
-     *
-     * @return string
-     */
     public function toString(): string
     {
         $block = $this->blockType;
@@ -224,19 +146,11 @@ abstract class Block
         return $block;
     }
 
-    /**
-     * Returns a string representation of the object.
-     *
-     * @return string
-     */
     public function __toString(): string
     {
         return $this->toString();
     }
 
-    /**
-     * Clones the current object.
-     */
     public function __clone()
     {
         $this->config = null;
@@ -245,7 +159,7 @@ abstract class Block
     /**
      * Sleep.
      *
-     * @return array
+     * @return array<string, string>
      */
     public function __sleep(): array
     {

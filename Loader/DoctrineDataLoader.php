@@ -3,52 +3,39 @@
 namespace Javer\SphinxBundle\Loader;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Driver\PDOSqlite\Driver as SqliteDriver;
-use Doctrine\DBAL\Driver\Statement;
+use Doctrine\DBAL\Driver\PDO\SQLite\Driver as SqliteDriver;
+use Doctrine\DBAL\Driver\ResultStatement;
 use Javer\SphinxBundle\Sphinx\Manager;
 use Javer\SphinxBundle\Sphinx\Query;
 use PDO;
 
-/**
- * Class DoctrineDataLoader
- *
- * @package Javer\SphinxBundle\Loader
- */
 class DoctrineDataLoader
 {
-    /**
-     * @var Manager
-     */
-    protected $sphinx;
-
-    /**
-     * @var Connection
-     */
-    protected $database;
-
-    /**
-     * DoctrineDataLoader constructor.
-     *
-     * @param Manager         $sphinx
-     * @param Connection|null $database
-     */
-    public function __construct(Manager $sphinx, Connection $database = null)
+    public function __construct(
+        protected Manager $sphinx,
+        protected ?Connection $database = null,
+    )
     {
-        $this->sphinx = $sphinx;
-        $this->database = $database;
     }
 
     /**
      * Load data from database to indexes.
      *
      * @param array $indexes
+     *
+     * @phpstan-param array<string, array{
+     *     schema: array<string, string>,
+     *     query: string,
+     *     joinedFields: array<array{string, string, string}>,
+     *     attrMulti: array<array{string, string, string}>
+     * }> $indexes
      */
     public function loadDataIntoIndexes(array $indexes): void
     {
         foreach ($indexes as $indexName => $indexData) {
             $this->clearIndex($indexName);
 
-            $joinedData = $this->loadDataForJoinedFields($indexName, $indexData['joinedFields']);
+            $joinedData = $this->loadDataForJoinedFields($indexData['joinedFields']);
 
             $this->loadDataForSqlQuery($indexName, $indexData['schema'], $indexData['query'], $joinedData);
 
@@ -56,11 +43,6 @@ class DoctrineDataLoader
         }
     }
 
-    /**
-     * Clear index.
-     *
-     * @param string $indexName
-     */
     protected function clearIndex(string $indexName): void
     {
         $this->createSphinxQuery('DELETE FROM ' . $indexName . ' WHERE id >= 1')
@@ -70,10 +52,10 @@ class DoctrineDataLoader
     /**
      * Load data for sql_query.
      *
-     * @param string $indexName
-     * @param array  $schema
-     * @param string $sqlQuery
-     * @param array  $joinedData
+     * @param string                                        $indexName
+     * @param array<string, string>                         $schema
+     * @param string                                        $sqlQuery
+     * @param array<string, array<int, array<int, string>>> $joinedData
      *
      * @return integer
      */
@@ -105,7 +87,7 @@ class DoctrineDataLoader
             if (isset($row['id'])) {
                 $docId = (int) $row['id'];
 
-                foreach ($joinedData as $joinedColumnName => $joinedColumnValues) {
+                foreach ($joinedData as $joinedColumnValues) {
                     $values[] = $sphinxQuery->quoteValue(implode(' ', $joinedColumnValues[$docId] ?? []));
                 }
             }
@@ -125,8 +107,8 @@ class DoctrineDataLoader
     /**
      * Load data for sql_attr_multi.
      *
-     * @param string $indexName
-     * @param array  $attrMulti
+     * @param string                               $indexName
+     * @param array<array{string, string, string}> $attrMulti
      */
     protected function loadDataForAttrMulti(string $indexName, array $attrMulti): void
     {
@@ -164,12 +146,11 @@ class DoctrineDataLoader
     /**
      * Load data for sql_joined_field.
      *
-     * @param string $indexName
-     * @param array  $joinedFields
+     * @param array<array{string, string, string}> $joinedFields
      *
-     * @return array
+     * @return array<string, array<int, array<int, string>>>
      */
-    protected function loadDataForJoinedFields(string $indexName, array $joinedFields): array
+    protected function loadDataForJoinedFields(array $joinedFields): array
     {
         $data = [];
 
@@ -197,20 +178,13 @@ class DoctrineDataLoader
      *
      * @param string $query
      *
-     * @return Statement
+     * @return ResultStatement<array{string, mixed}>
      */
-    protected function executeDatabaseQuery(string $query): Statement
+    protected function executeDatabaseQuery(string $query): ResultStatement
     {
         return $this->database->executeQuery($this->adaptQuery($query));
     }
 
-    /**
-     * Adapt query to the current database driver.
-     *
-     * @param string $query
-     *
-     * @return string
-     */
     protected function adaptQuery(string $query): string
     {
         if ($this->database->getDriver() instanceof SqliteDriver) {
@@ -220,14 +194,7 @@ class DoctrineDataLoader
         return $query;
     }
 
-    /**
-     * Create a new Sphinx Query.
-     *
-     * @param string|null $query
-     *
-     * @return Query
-     */
-    protected function createSphinxQuery(string $query = null): Query
+    protected function createSphinxQuery(?string $query = null): Query
     {
         $sphinxQuery = $this->sphinx->createQuery();
 
@@ -238,15 +205,7 @@ class DoctrineDataLoader
         return $sphinxQuery;
     }
 
-    /**
-     * Cast value to the given type.
-     *
-     * @param mixed  $value
-     * @param string $type
-     *
-     * @return string|integer
-     */
-    protected function castValue($value, string $type)
+    protected function castValue(mixed $value, string $type): string|int
     {
         if (in_array($type, ['uint', 'bool', 'bigint', 'timestamp'])) {
             return (int) $value;

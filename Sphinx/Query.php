@@ -9,11 +9,6 @@ use Javer\SphinxBundle\Logger\SphinxLogger;
 use PDO;
 use PDOStatement;
 
-/**
- * Class Query
- *
- * @package Javer\SphinxBundle\Sphinx
- */
 class Query
 {
     public const OPERATOR_EQUAL = '=';
@@ -38,129 +33,81 @@ class Query
         self::OPERATOR_BETWEEN,
     ];
 
-    /**
-     * @var PDO
-     */
-    protected $connection;
+    protected ?QueryBuilder $queryBuilder = null;
+
+    protected ?string $queryBuilderAlias = null;
+
+    protected ?string $queryBuilderColumn = null;
 
     /**
-     * @var SphinxLogger
+     * @var string[]
      */
-    protected $logger;
+    protected array $select = [];
 
     /**
-     * @var string|null
+     * @var array<int, string>
      */
-    protected $query;
+    protected array $from = [];
 
     /**
-     * @var QueryBuilder|null
+     * @var array<array{string, string, mixed}>
      */
-    protected $queryBuilder;
+    protected array $where = [];
 
     /**
-     * @var string|null
+     * @var array<array{string|array, string, bool}>
      */
-    protected $queryBuilderAlias;
+    protected array $match = [];
 
     /**
-     * @var string|null
+     * @var array<int, string>
      */
-    protected $queryBuilderColumn;
+    protected array $groupBy = [];
 
     /**
-     * @var array
+     * @var array<array{string, string}>
      */
-    protected $select = [];
+    protected array $withinGroupOrderBy = [];
 
     /**
-     * @var array
+     * @var array<array{string, string, mixed}>
      */
-    protected $from = [];
+    protected array $having = [];
 
     /**
-     * @var array
+     * @var array<array{string, string}>
      */
-    protected $where = [];
+    protected array $orderBy = [];
+
+    protected int $offset = 0;
+
+    protected int $limit = 20;
 
     /**
-     * @var array
+     * @var array<array{string, string}>
      */
-    protected $match = [];
+    protected array $option = [];
 
     /**
-     * @var array
+     * @var array<int, object|array<string, mixed>>|null
      */
-    protected $groupBy = [];
+    protected ?array $results = null;
+
+    protected ?int $numRows = null;
 
     /**
-     * @var array
+     * @var array<string, mixed>|null
      */
-    protected $withinGroupOrderBy = [];
+    protected ?array $metadata = null;
 
-    /**
-     * @var array
-     */
-    protected $having = [];
-
-    /**
-     * @var array
-     */
-    protected $orderBy = [];
-
-    /**
-     * @var integer
-     */
-    protected $offset = 0;
-
-    /**
-     * @var integer
-     */
-    protected $limit = 20;
-
-    /**
-     * @var array
-     */
-    protected $option = [];
-
-    /**
-     * @var array|null
-     */
-    protected $results;
-
-    /**
-     * @var integer
-     */
-    protected $numRows;
-
-    /**
-     * @var array|null
-     */
-    protected $metadata;
-
-    /**
-     * Query constructor.
-     *
-     * @param PDO          $connection
-     * @param SphinxLogger $logger
-     * @param string|null  $query
-     */
-    public function __construct(PDO $connection, SphinxLogger $logger, string $query = null)
+    public function __construct(
+        protected PDO $connection,
+        protected SphinxLogger $logger,
+        protected ?string $query = null,
+    )
     {
-        $this->connection = $connection;
-        $this->logger = $logger;
-        $this->query = $query;
     }
 
-    /**
-     * Use QueryBuilder.
-     *
-     * @param QueryBuilder $queryBuilder
-     * @param string       $alias
-     * @param string       $column
-     *
-     * @return Query
-     */
     public function useQueryBuilder(QueryBuilder $queryBuilder, string $alias, string $column = 'id'): Query
     {
         $this->queryBuilder = clone $queryBuilder;
@@ -174,13 +121,6 @@ class Query
         return $this;
     }
 
-    /**
-     * Sets query.
-     *
-     * @param string $query
-     *
-     * @return Query
-     */
     public function setQuery(string $query): Query
     {
         $this->query = $query;
@@ -223,11 +163,11 @@ class Query
      * @param mixed  $operator
      * @param mixed  $value
      *
-     * @return array
+     * @return array{string, string, mixed}
      *
      * @throws InvalidArgumentException
      */
-    protected function createCondition(string $column, $operator, $value = null): array
+    protected function createCondition(string $column, mixed $operator, mixed $value = null): array
     {
         if ($value === null) {
             $value = $operator;
@@ -251,16 +191,7 @@ class Query
         return [$column, $operator, $value];
     }
 
-    /**
-     * Add WHERE clause.
-     *
-     * @param string $column
-     * @param mixed  $operator
-     * @param mixed  $value
-     *
-     * @return Query
-     */
-    public function where(string $column, $operator, $value = null): Query
+    public function where(string $column, mixed $operator, mixed $value = null): Query
     {
         $this->where[] = $this->createCondition($column, $operator, $value);
 
@@ -276,20 +207,13 @@ class Query
      *
      * @return Query
      */
-    public function match($column, $value, bool $safe = false): Query
+    public function match(string|array $column, string $value, bool $safe = false): Query
     {
         $this->match[] = [$column, $value, $safe];
 
         return $this;
     }
 
-    /**
-     * Group by column.
-     *
-     * @param string $column
-     *
-     * @return Query
-     */
     public function groupBy(string $column): Query
     {
         $this->groupBy[] = $column;
@@ -297,14 +221,6 @@ class Query
         return $this;
     }
 
-    /**
-     * Within group order by column.
-     *
-     * @param string      $column
-     * @param string|null $direction
-     *
-     * @return Query
-     */
     public function withinGroupOrderBy(string $column, ?string $direction = null): Query
     {
         $this->withinGroupOrderBy[] = [
@@ -315,30 +231,13 @@ class Query
         return $this;
     }
 
-    /**
-     * Add HAVING clause.
-     *
-     * @param string $column
-     * @param mixed  $operator
-     * @param mixed  $value
-     *
-     * @return Query
-     */
-    public function having(string $column, $operator, $value = null): Query
+    public function having(string $column, mixed $operator, mixed $value = null): Query
     {
         $this->having[] = $this->createCondition($column, $operator, $value);
 
         return $this;
     }
 
-    /**
-     * Order by column.
-     *
-     * @param string      $column
-     * @param string|null $direction
-     *
-     * @return Query
-     */
     public function orderBy(string $column, ?string $direction = null): Query
     {
         $this->orderBy[] = [
@@ -403,14 +302,6 @@ class Query
         return $this;
     }
 
-    /**
-     * Add option.
-     *
-     * @param string $name
-     * @param string $value
-     *
-     * @return Query
-     */
     public function option(string $name, string $value): Query
     {
         $this->option[] = [$name, $value];
@@ -418,15 +309,7 @@ class Query
         return $this;
     }
 
-    /**
-     * Quote value.
-     *
-     * @param mixed   $value
-     * @param integer $type
-     *
-     * @return string|integer|boolean
-     */
-    public function quoteValue($value, int $type = PDO::PARAM_STR)
+    public function quoteValue(mixed $value, int $type = PDO::PARAM_STR): string|int|bool
     {
         if (is_int($value) || is_bool($value)) {
             return (int) $value;
@@ -435,24 +318,11 @@ class Query
         return $this->connection->quote($value, $type);
     }
 
-    /**
-     * Quote match.
-     *
-     * @param string  $value
-     * @param boolean $isText
-     *
-     * @return string
-     */
     public function quoteMatch(string $value, bool $isText = false): string
     {
         return addcslashes($value, $isText ? '\()!@~&/^$=<>' : '\()|-!@~"&/^$=<>');
     }
 
-    /**
-     * Returns a plain SQL query.
-     *
-     * @return string
-     */
     public function getQuery(): string
     {
         if ($this->query === null) {
@@ -521,7 +391,7 @@ class Query
     /**
      * Builds condition clause.
      *
-     * @param array $conditions
+     * @param array<array{string, string, mixed}> $conditions
      *
      * @return string
      */
@@ -547,7 +417,7 @@ class Query
     /**
      * Builds match clause.
      *
-     * @param array $matches
+     * @param array<array{string|array, string, bool}> $matches
      *
      * @return string
      */
@@ -575,7 +445,7 @@ class Query
     /**
      * Builds order clause.
      *
-     * @param array $orders
+     * @param array<array{string, string}> $orders
      *
      * @return string
      */
@@ -593,7 +463,7 @@ class Query
     /**
      * Builds option clause.
      *
-     * @param array $options
+     * @param array<array{string, string}> $options
      *
      * @return string
      */
@@ -611,7 +481,7 @@ class Query
     /**
      * Returns an array of results.
      *
-     * @return array
+     * @return array<int, object|array<string, mixed>>
      */
     public function getResults(): array
     {
@@ -619,18 +489,13 @@ class Query
             $this->execute();
 
             if ($this->queryBuilder) {
-                $this->results = $this->applyQueryBuilder($this->results);
+                $this->results = $this->applyQueryBuilder($this->results ?? []);
             }
         }
 
         return $this->results;
     }
 
-    /**
-     * Executes query and returns number of affected rows.
-     *
-     * @return integer
-     */
     public function execute(): int
     {
         $startTime = microtime(true);
@@ -672,13 +537,6 @@ class Query
         return $this->numRows;
     }
 
-    /**
-     * Creates a new PDO statement.
-     *
-     * @param string $query
-     *
-     * @return PDOStatement
-     */
     protected function createStatement(string $query): PDOStatement
     {
         return $this->connection->prepare($query);
@@ -687,9 +545,9 @@ class Query
     /**
      * Apply QueryBuilder
      *
-     * @param array $results
+     * @param array<int, array<string, mixed>> $results
      *
-     * @return array
+     * @return array<int, object>
      */
     protected function applyQueryBuilder(array $results): array
     {
@@ -729,7 +587,7 @@ class Query
     /**
      * Returns query result metadata.
      *
-     * @return array
+     * @return array<string, mixed>
      *
      * @throws BadMethodCallException
      */
@@ -754,44 +612,23 @@ class Query
         return $this->metadata;
     }
 
-    /**
-     * Returns metadata value.
-     *
-     * @param string $name
-     * @param mixed  $defaultValue
-     *
-     * @return mixed|null
-     */
-    public function getMetadataValue(string $name, $defaultValue = null)
+    public function getMetadataValue(string $name, mixed $defaultValue = null): mixed
     {
         $metadata = $this->getMetadata();
 
         return array_key_exists($name, $metadata) ? $metadata[$name] : $defaultValue;
     }
 
-    /**
-     * Returns total count of found rows.
-     *
-     * @return integer
-     */
     public function getTotalFound(): int
     {
         return (int) $this->getMetadataValue('total_found', 0);
     }
 
-    /**
-     * Returns executing time.
-     *
-     * @return float
-     */
     public function getTime(): float
     {
         return (float) $this->getMetadataValue('time', 0);
     }
 
-    /**
-     * Clones the current object.
-     */
     public function __clone()
     {
         $this->results = null;
@@ -813,11 +650,6 @@ class Query
         return array_diff(array_keys(get_object_vars($this)), ['connection', 'logger', 'queryBuilder', 'results']);
     }
 
-    /**
-     * Returns a string representation of the object.
-     *
-     * @return string
-     */
     public function __toString(): string
     {
         return $this->getQuery();

@@ -2,73 +2,36 @@
 
 namespace Javer\SphinxBundle\Config;
 
-/**
- * Class Config
- *
- * @package Javer\SphinxBundle\Config
- */
 class Config
 {
     /**
      * @var Source[]
      */
-    protected $sources;
+    protected array $sources = [];
 
     /**
      * @var Index[]
      */
-    protected $indexes;
+    protected array $indexes = [];
 
-    /**
-     * @var Indexer
-     */
-    protected $indexer;
+    protected ?Indexer $indexer = null;
 
-    /**
-     * @var Daemon
-     */
-    protected $daemon;
+    protected ?Daemon $daemon = null;
 
-    /**
-     * Config constructor.
-     */
-    public function __construct()
+    final public function __construct()
     {
-        $this->sources = [];
-        $this->indexes = [];
     }
 
-    /**
-     * Create configuration from the given string.
-     *
-     * @param string $config
-     *
-     * @return Config
-     */
     public static function fromString(string $config): self
     {
         return static::parse($config);
     }
 
-    /**
-     * Create configuration from the given file.
-     *
-     * @param string $filename
-     *
-     * @return Config
-     */
     public static function fromFile(string $filename): self
     {
         return static::parse(file_get_contents($filename));
     }
 
-    /**
-     * Parse config.
-     *
-     * @param string $configText
-     *
-     * @return Config
-     */
     protected static function parse(string $configText): self
     {
         $configText = str_replace(["\r", "\n\n", "\\\n"], ["\n", "\n", ''], $configText);
@@ -84,12 +47,12 @@ class Config
                 $blockContent = trim($blockContent);
                 $options = [];
 
-                if (strpos($blockHeader, ' ') === false) {
+                if (!str_contains($blockHeader, ' ')) {
                     $blockType = $blockHeader;
                 } else {
                     [$blockType, $blockName] = explode(' ', $blockHeader, 2);
 
-                    if (strpos($blockName, ':') !== false) {
+                    if (str_contains($blockName, ':')) {
                         [$blockName, $blockParent] = explode(':', str_replace(' ', '', $blockName), 2);
                     }
                 }
@@ -123,13 +86,6 @@ class Config
         return $config;
     }
 
-    /**
-     * Add source.
-     *
-     * @param Source $source
-     *
-     * @return Config
-     */
     public function addSource(Source $source): self
     {
         $this->sources[] = $source->setConfig($this);
@@ -147,13 +103,6 @@ class Config
         return $this->sources;
     }
 
-    /**
-     * Returns source by name.
-     *
-     * @param string $name
-     *
-     * @return Source|null
-     */
     public function getSourceByName(string $name): ?Source
     {
         foreach ($this->sources as $source) {
@@ -165,13 +114,6 @@ class Config
         return null;
     }
 
-    /**
-     * Add index.
-     *
-     * @param Index $index
-     *
-     * @return Config
-     */
     public function addIndex(Index $index): self
     {
         $this->indexes[] = $index->setConfig($this);
@@ -189,13 +131,6 @@ class Config
         return $this->indexes;
     }
 
-    /**
-     * Returns index by name.
-     *
-     * @param string $name
-     *
-     * @return Index|null
-     */
     public function getIndexByName(string $name): ?Index
     {
         foreach ($this->indexes as $index) {
@@ -207,59 +142,30 @@ class Config
         return null;
     }
 
-    /**
-     * Set indexer.
-     *
-     * @param Indexer $indexer
-     *
-     * @return Config
-     */
-    public function setIndexer(Indexer $indexer = null): self
+    public function setIndexer(?Indexer $indexer): self
     {
         $this->indexer = $indexer ? $indexer->setConfig($this) : null;
 
         return $this;
     }
 
-    /**
-     * Returns indexer.
-     *
-     * @return Indexer|null
-     */
     public function getIndexer(): ?Indexer
     {
         return $this->indexer;
     }
 
-    /**
-     * Set daemon.
-     *
-     * @param Daemon|null $daemon
-     *
-     * @return Config
-     */
-    public function setDaemon(Daemon $daemon = null): self
+    public function setDaemon(?Daemon $daemon): self
     {
         $this->daemon = $daemon ? $daemon->setConfig($this) : null;
 
         return $this;
     }
 
-    /**
-     * Returns daemon.
-     *
-     * @return Daemon|null
-     */
     public function getDaemon(): ?Daemon
     {
         return $this->daemon;
     }
 
-    /**
-     * Renders config to string.
-     *
-     * @return string
-     */
     public function toString(): string
     {
         $config = '';
@@ -283,13 +189,6 @@ class Config
         return $config;
     }
 
-    /**
-     * Save config to file.
-     *
-     * @param string $filename
-     *
-     * @return Config
-     */
     public function saveToFile(string $filename): self
     {
         file_put_contents($filename, $this->toString());
@@ -297,19 +196,11 @@ class Config
         return $this;
     }
 
-    /**
-     * Returns a string representation of the object.
-     *
-     * @return string
-     */
     public function __toString(): string
     {
         return $this->toString();
     }
 
-    /**
-     * Clones the current object.
-     */
     public function __clone()
     {
         foreach ($this->sources as $k => $source) {

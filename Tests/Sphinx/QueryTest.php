@@ -8,19 +8,9 @@ use PDO;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-/**
- * Class QueryTest
- *
- * @package Javer\SphinxBundle\Tests\Sphinx
- */
 class QueryTest extends TestCase
 {
-    /**
-     * Creates a new Query.
-     *
-     * @return Query
-     */
-    private function createQuery(): Query
+    private function createQuery(): Query|MockObject
     {
         $pdo = $this->createPartialMock(PDO::class, ['quote']);
 
@@ -35,15 +25,12 @@ class QueryTest extends TestCase
         /** @var Query|MockObject $query */
         $query = $this->getMockBuilder(Query::class)
             ->setConstructorArgs([$pdo, $logger])
-            ->setMethods()
+            ->onlyMethods([])
             ->getMock();
 
         return $query;
     }
 
-    /**
-     * Tests select query.
-     */
     public function testSelectQuery(): void
     {
         $actualSql = $this->createQuery()
@@ -63,10 +50,10 @@ class QueryTest extends TestCase
             ->having('weight', '>', 2)
             ->orderBy('column15', 'desc')
             ->orderBy('column16')
-            ->offset('5')
+            ->offset(5)
             ->limit(10)
-            ->option('agent_query_timeout', 10000)
-            ->option('max_matches', 1000)
+            ->option('agent_query_timeout', '10000')
+            ->option('max_matches', '1000')
             ->option('field_weights', '(column9=10, column10=3)')
             ->getQuery();
 
@@ -88,9 +75,6 @@ class QueryTest extends TestCase
         self::assertEquals($expectedSql, $actualSql);
     }
 
-    /**
-     * Test raw query.
-     */
     public function testRawQuery(): void
     {
         $actualSql = $this->createQuery()
@@ -102,9 +86,6 @@ class QueryTest extends TestCase
         self::assertEquals($expectedSql, $actualSql);
     }
 
-    /**
-     * Test quote value.
-     */
     public function testQuoteValue(): void
     {
         $query = $this->createQuery();

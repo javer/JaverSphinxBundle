@@ -6,11 +6,6 @@ use Behat\Behat\Context\Context;
 use Javer\SphinxBundle\Sphinx\Daemon;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-/**
- * Class BaseSphinxContext
- *
- * @package Javer\SphinxBundle\Behat\Context
- */
 abstract class BaseSphinxContext implements Context
 {
     /**
@@ -55,10 +50,5 @@ abstract class BaseSphinxContext implements Context
         $this->getTestContainer()->get('sphinx.daemon')->stop();
     }
 
-    /**
-     * Returns test container.
-     *
-     * @return ContainerInterface
-     */
     abstract protected function getTestContainer(): ContainerInterface;
 }

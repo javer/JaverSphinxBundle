@@ -4,55 +4,25 @@ namespace Javer\SphinxBundle\Logger;
 
 use Psr\Log\LoggerInterface;
 
-/**
- * Class SphinxLogger
- *
- * @package Javer\SphinxBundle\Logger
- */
 class SphinxLogger
 {
     /**
-     * @var LoggerInterface
+     * @var array<array{sql: string, rows: int, time: float}>
      */
-    protected $logger;
+    protected array $queries = [];
 
-    /**
-     * @var array
-     */
-    protected $queries = [];
+    protected int $queriesCount = 0;
 
-    /**
-     * @var integer
-     */
-    protected $queriesCount = 0;
+    protected int $queriesRows = 0;
 
-    /**
-     * @var integer
-     */
-    protected $queriesRows = 0;
+    protected float $queriesTime = 0.0;
 
-    /**
-     * @var float
-     */
-    protected $queriesTime = 0;
-
-    /**
-     * SphinxLogger constructor.
-     *
-     * @param LoggerInterface|null $logger
-     */
-    public function __construct(LoggerInterface $logger = null)
+    public function __construct(
+        protected ?LoggerInterface $logger = null,
+    )
     {
-        $this->logger = $logger;
     }
 
-    /**
-     * Logs a query.
-     *
-     * @param string  $query
-     * @param integer $numRows
-     * @param float   $time
-     */
     public function logQuery(string $query, int $numRows, float $time): void
     {
         $this->queries[] = [
@@ -73,46 +43,28 @@ class SphinxLogger
     /**
      * Returns queries.
      *
-     * @return array
+     * @return array<array{sql: string, rows: int, time: float}>
      */
     public function getQueries(): array
     {
         return $this->queries;
     }
 
-    /**
-     * Returns queries count.
-     *
-     * @return integer
-     */
     public function getQueriesCount(): int
     {
         return $this->queriesCount;
     }
 
-    /**
-     * Returns queries rows.
-     *
-     * @return integer
-     */
     public function getQueriesRows(): int
     {
         return $this->queriesRows;
     }
 
-    /**
-     * Returns queries time.
-     *
-     * @return float
-     */
     public function getQueriesTime(): float
     {
         return $this->queriesTime;
     }
 
-    /**
-     * Resets internal state.
-     */
     public function reset(): void
     {
         $this->queries = [];

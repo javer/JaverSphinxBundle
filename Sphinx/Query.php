@@ -537,6 +537,9 @@ class Query
         return $this->numRows;
     }
 
+    /**
+     * @phpstan-return PDOStatement<mixed>
+     */
     protected function createStatement(string $query): PDOStatement
     {
         return $this->connection->prepare($query);

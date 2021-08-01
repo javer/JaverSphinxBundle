@@ -17,6 +17,7 @@ jobs:
             matrix:
                 php-version:
                     - '8.0'
+                    - '8.1'
                 allowed-to-fail: [false]
 
         steps:
@@ -33,6 +34,10 @@ jobs:
 
             - name: Validate composer.json
               run: composer validate --no-check-lock
+
+            - name: Configure for PHP 8.1
+              if: matrix.php-version == '8.1'
+              run: composer config platform.php 8.0.99
 
             - name: Install dependencies
               run: composer install --prefer-dist --no-progress --ansi

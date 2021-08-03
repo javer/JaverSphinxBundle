@@ -191,3 +191,12 @@ It is not necessary when you declare fields for MySQL index in sphinx.conf, but 
 If you use sqlite as the database engine for running tests you should take into account that not all functions of the MySQL are presented in sqlite, so you should use portable analogs for these functions:
 * `IF(condition, true, false)` -> `CASE WHEN condition THEN true ELSE false END`
 * and so on
+
+Docker
+------
+
+You can use a docker image to run the daemon in the docker container for the test environment, just add the following configuration option to `config/packages/test/javer_sphinx.yaml`:
+```yaml
+javer_sphinx:
+    docker_image: javer/sphinx
+```

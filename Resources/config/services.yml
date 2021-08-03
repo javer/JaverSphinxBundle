@@ -1,6 +1,7 @@
 parameters:
     sphinx.manager.class: Javer\SphinxBundle\Sphinx\Manager
-    sphinx.daemon.class: Javer\SphinxBundle\Sphinx\Daemon
+    sphinx.daemon.native.class: Javer\SphinxBundle\Sphinx\Daemon\NativeDaemon
+    sphinx.daemon.docker.class: Javer\SphinxBundle\Sphinx\Daemon\DockerDaemon
     sphinx.daemon.timeout.start: 1
     sphinx.daemon.timeout.stop: 3
     sphinx.event.subscriber.paginate.class: Javer\SphinxBundle\Event\Subscriber\PaginateSphinxQuerySubscriber
@@ -41,14 +42,26 @@ services:
         tags:
             - { name: data_collector, template: "@JaverSphinx/Collector/sphinx.html.twig", id: sphinx }
 
-    sphinx.daemon:
-        class: "%sphinx.daemon.class%"
+    sphinx.daemon.native:
+        abstract: true
+        class: "%sphinx.daemon.native.class%"
         arguments:
             - "%javer_sphinx.searchd_path%"
             - "%javer_sphinx.config_path%"
             - "%javer_sphinx.data_dir%/searchd.pid"
             - "%sphinx.daemon.timeout.start%"
             - "%sphinx.daemon.timeout.stop%"
+
+    sphinx.daemon.docker:
+        abstract: true
+        class: "%sphinx.daemon.docker.class%"
+        arguments:
+            - "%javer_sphinx.docker_image%"
+            - "%javer_sphinx.config_path%"
+            - "%javer_sphinx.data_dir%"
+            - "%javer_sphinx.data_dir%/searchd.cid"
+            - "%javer_sphinx.port%"
+            - "%sphinx.daemon.timeout.start%"
 
     sphinx.converter.mysql_to_realtime:
         class: "%sphinx.converter.mysql_to_realtime.class%"

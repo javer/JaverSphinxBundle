@@ -3,7 +3,7 @@
 namespace Javer\SphinxBundle\Behat\Context;
 
 use Behat\Behat\Context\Context;
-use Javer\SphinxBundle\Sphinx\Daemon;
+use Javer\SphinxBundle\Sphinx\Daemon\DaemonInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 abstract class BaseSphinxContext implements Context
@@ -26,8 +26,9 @@ abstract class BaseSphinxContext implements Context
 
         $configPath = $dataDir . '/sphinx.conf';
 
-        /** @var Daemon $daemon */
-        $daemon = $container->get('sphinx.daemon')->setConfigPath($configPath);
+        /** @var DaemonInterface $daemon */
+        $daemon = $container->get('sphinx.daemon');
+        $daemon->setConfigPath($configPath);
         $daemon->stop();
 
         $indexes = $container->get('sphinx.converter.mysql_to_realtime')

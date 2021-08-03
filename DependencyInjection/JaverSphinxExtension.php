@@ -2,7 +2,9 @@
 
 namespace Javer\SphinxBundle\DependencyInjection;
 
+use Javer\SphinxBundle\Sphinx\Daemon\DaemonInterface;
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
@@ -28,5 +30,15 @@ class JaverSphinxExtension extends Extension
         $container->setParameter('javer_sphinx.config_path', $config['config_path']);
         $container->setParameter('javer_sphinx.data_dir', $config['data_dir']);
         $container->setParameter('javer_sphinx.searchd_path', $config['searchd_path']);
+        $container->setParameter('javer_sphinx.docker_image', $config['docker_image']);
+
+        if (is_string($config['docker_image']) && $config['docker_image'] !== '') {
+            $daemonDefinition = 'sphinx.daemon.docker';
+        } else {
+            $daemonDefinition = 'sphinx.daemon.native';
+        }
+
+        $container->setDefinition('sphinx.daemon', new ChildDefinition($daemonDefinition));
+        $container->setAlias(DaemonInterface::class, 'sphinx.daemon');
     }
 }

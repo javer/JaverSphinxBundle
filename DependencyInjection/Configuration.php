@@ -19,6 +19,7 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('config_path')->defaultValue('%kernel.project_dir%/config/sphinx.conf')->end()
                 ->scalarNode('data_dir')->defaultValue('%kernel.cache_dir%/sphinx')->end()
                 ->scalarNode('searchd_path')->defaultValue('searchd')->end()
+                ->scalarNode('docker_image')->defaultValue('')->end()
             ->end();
 
         return $treeBuilder;

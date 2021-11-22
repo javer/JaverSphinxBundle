@@ -4,10 +4,9 @@ namespace Javer\SphinxBundle\Loader;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\PDO\SQLite\Driver as SqliteDriver;
-use Doctrine\DBAL\Driver\ResultStatement;
+use Doctrine\DBAL\Result;
 use Javer\SphinxBundle\Sphinx\Manager;
 use Javer\SphinxBundle\Sphinx\Query;
-use PDO;
 
 class DoctrineDataLoader
 {
@@ -72,7 +71,7 @@ class DoctrineDataLoader
         $batch = '';
         $columns = [];
 
-        while (($row = $stmt->fetch(PDO::FETCH_ASSOC)) !== false) {
+        while (($row = $stmt->fetchAssociative()) !== false) {
             if (empty($columns)) {
                 $columns = array_merge(array_keys($row), array_keys($joinedData));
             }
@@ -118,7 +117,7 @@ class DoctrineDataLoader
             $multiValues = [];
             $sphinxQuery = $this->createSphinxQuery();
 
-            while (($row = $stmt->fetch(PDO::FETCH_NUM)) !== false) {
+            while (($row = $stmt->fetchNumeric()) !== false) {
                 $docId = (int) $row[0];
                 $value = $row[1];
 
@@ -158,7 +157,7 @@ class DoctrineDataLoader
             $stmt = $this->executeDatabaseQuery($joinedQuery);
             $data[$fieldName] = [];
 
-            while (($row = $stmt->fetch(PDO::FETCH_NUM)) !== false) {
+            while (($row = $stmt->fetchNumeric()) !== false) {
                 $docId = (int) $row[0];
                 $value = (string) $row[1];
 
@@ -173,14 +172,7 @@ class DoctrineDataLoader
         return $data;
     }
 
-    /**
-     * Execute query on the current database.
-     *
-     * @param string $query
-     *
-     * @return ResultStatement<array{string, mixed}>
-     */
-    protected function executeDatabaseQuery(string $query): ResultStatement
+    protected function executeDatabaseQuery(string $query): Result
     {
         return $this->database->executeQuery($this->adaptQuery($query));
     }

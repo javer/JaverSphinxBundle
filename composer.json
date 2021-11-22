@@ -20,7 +20,7 @@
     },
     "require-dev": {
         "behat/behat": "^3.7",
-        "doctrine/dbal": "^2.12",
+        "doctrine/dbal": "^2.12 || ^3.0",
         "doctrine/orm": "^2.8",
         "knplabs/knp-components": "^3.0",
         "phpstan/phpstan": "^0.12.33",

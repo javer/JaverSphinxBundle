@@ -13,7 +13,7 @@ Features:
 Requirements
 ------------
 
-- PHP 7.1+
+- PHP 8.0+
 - pdo_mysql php extension
 
 Installation

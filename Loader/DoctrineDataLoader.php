@@ -3,7 +3,7 @@
 namespace Javer\SphinxBundle\Loader;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Driver\PDO\SQLite\Driver as SqliteDriver;
+use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Result;
 use Javer\SphinxBundle\Sphinx\Manager;
 use Javer\SphinxBundle\Sphinx\Query;
@@ -179,7 +179,7 @@ class DoctrineDataLoader
 
     protected function adaptQuery(string $query): string
     {
-        if ($this->database->getDriver() instanceof SqliteDriver) {
+        if ($this->database->getDatabasePlatform() instanceof SqlitePlatform) {
             $query = preg_replace("/UNIX_TIMESTAMP\(/i", "strftime('%s', ", $query);
         }
 

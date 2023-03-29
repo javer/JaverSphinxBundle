@@ -181,6 +181,7 @@ class DoctrineDataLoader
     {
         if ($this->database->getDatabasePlatform() instanceof SqlitePlatform) {
             $query = preg_replace("/UNIX_TIMESTAMP\(/i", "strftime('%s', ", $query);
+            $query = preg_replace("/JSON_OBJECTAGG\(/i", "json_group_object(", $query);
         }
 
         return $query;

@@ -9,7 +9,7 @@ jobs:
     test:
         name: PHP ${{ matrix.php-version }}
 
-        runs-on: ubuntu-20.04
+        runs-on: ubuntu-22.04
 
         continue-on-error: ${{ matrix.allowed-to-fail }}
 
@@ -18,11 +18,12 @@ jobs:
                 php-version:
                     - '8.0'
                     - '8.1'
+                    - '8.2'
                 allowed-to-fail: [false]
 
         steps:
             - name: Checkout
-              uses: actions/checkout@v2
+              uses: actions/checkout@v3
 
             - name: Setup PHP
               uses: shivammathur/setup-php@v2
@@ -34,10 +35,6 @@ jobs:
 
             - name: Validate composer.json
               run: composer validate --no-check-lock
-
-            - name: Configure for PHP 8.1
-              if: matrix.php-version == '8.1'
-              run: composer config platform.php 8.0.99
 
             - name: Install dependencies
               run: composer install --prefer-dist --no-progress --ansi

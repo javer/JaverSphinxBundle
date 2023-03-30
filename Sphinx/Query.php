@@ -55,7 +55,7 @@ class Query
     protected array $where = [];
 
     /**
-     * @var array<array{string|array, string, bool}>
+     * @var array<array{string|array<string>, string, bool}>
      */
     protected array $match = [];
 
@@ -417,7 +417,7 @@ class Query
     /**
      * Builds match clause.
      *
-     * @param array<array{string|array, string, bool}> $matches
+     * @param array<array{string|array<string>, string, bool}> $matches
      *
      * @return string
      */
